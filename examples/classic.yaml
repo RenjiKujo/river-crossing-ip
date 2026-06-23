@@ -1,0 +1,25 @@
+# classic 定式化の定形例（狼と羊とキャベツ）
+puzzle_type: classic
+
+items:
+  - farmer
+  - wolf
+  - goat
+  - cabbage
+
+capacity: 2
+
+pilots:
+  - farmer
+
+forbidden_co_presence:
+  - members: [wolf, goat]
+    guardians: [farmer]
+    description: 狼と羊が同じ地点にいるとき農夫が仲裁に必要
+  - members: [goat, cabbage]
+    guardians: [farmer]
+    description: 羊とキャベツが同じ地点にいるとき農夫が仲裁に必要
+
+initial_far_side: []
+
+buffer_time: 1

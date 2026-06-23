@@ -1,0 +1,78 @@
+# dr_stone 定式化の定形例（南米編ロープウェー）
+puzzle_type: dr_stone
+
+items:
+  - senku
+  - zeno
+  - kaseki
+  - gen
+  - chrome
+  - ukyo
+  - hyoga
+  - tsukasa
+  - taiju
+  - suika
+  - ryusui
+  - francois
+  - luna
+  - max
+  - carlos
+  - kohaku
+  - chelsea
+
+capacity: 3
+
+item_weights:
+  senku: 61
+  zeno: 69
+  kaseki: 57
+  gen: 61
+  chrome: 63
+  ukyo: 63
+  hyoga: 81
+  tsukasa: 99
+  taiju: 95
+  suika: 21
+  ryusui: 78
+  francois: 50
+  luna: 55
+  max: 59
+  carlos: 72
+  kohaku: 52
+  chelsea: 40
+
+max_load_weight: 160
+alpha: 0.01
+beta: 0.001
+
+suspicious_members:
+  - hyoga
+  - zeno
+
+craft_members:
+  - senku
+  - kaseki
+  - chrome
+  - zeno
+
+battle_members:
+  - tsukasa
+  - kohaku
+  - taiju
+  - hyoga
+
+quasi_battle_members:
+  - senku
+  - zeno
+  - kaseki
+  - gen
+  - chrome
+  - ukyo
+  - ryusui
+  - max
+  - carlos
+
+initial_far_side:
+  - kohaku
+
+buffer_time: 2
