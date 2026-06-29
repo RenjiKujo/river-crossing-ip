@@ -43,13 +43,22 @@ pip install -e ".[dev]"
 .venv/bin/python runner/solve.py --spec examples/dr_stone.yaml
 ```
 
+求解から YouTube Shorts 向け縦型 mp4（1080x1920）まで一括で行う場合（`dr_stone` のみ）。追加依存（`matplotlib`, `imageio-ffmpeg`）が必要です。`imageio-ffmpeg` に ffmpeg バイナリが同梱されます:
+
+```bash
+pip install -e ".[animate]"
+.venv/bin/python runner/animate.py --spec examples/dr_stone.yaml --output out/dr_stone_short.mp4
+```
+
+`--no-intro` で冒頭タイトルカードを省略、`--intro-seconds 1.0` で表示秒数を変更できます。
+
 登録済みの問題タイプを確認:
 
 ```bash
 .venv/bin/python runner/solve.py --list-types
 ```
 
-ソルバーログを表示する場合は `--tee` を付けます。
+ソルバーログを表示する場合は `--tee` を付けます（`solve.py` / `animate.py` 共通）。
 
 ## Python API
 
@@ -100,6 +109,8 @@ src/river_crossing_ip/
 runner/
   solve.py                  # CLI
   display.py                # 結果の表示
+  animate.py                # 求解結果アニメ mp4 生成（dr_stone）
+  animation/                # アニメ描画・書き出し
 examples/                   # 問題定義サンプル
 docs/                       # 問題設定・定式化メモ
 tests/                      # 統合テスト

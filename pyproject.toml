@@ -19,6 +19,10 @@ dev = [
   "ruff>=0.14.0",
   "pytest>=7.0.0",
 ]
+animate = [
+  "matplotlib>=3.8.0",
+  "imageio-ffmpeg>=0.5.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -28,3 +32,6 @@ include = ["river_crossing_ip*"]
 line-length = 88
 target-version = "py310"
 indent-width = 4
+
+[tool.basedpyright]
+extraPaths = ["runner"]
