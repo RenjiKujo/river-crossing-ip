@@ -21,7 +21,7 @@ def add_dr_stone_constraints(
     spec: PuzzleSpec,
     indices: ProblemIndices,
 ) -> None:
-    """dr_stone 固有の制約 C6, C8, C9, C10 を追加する。
+    """dr_stone 固有の制約 C6, C8, C9, C10, C11 を追加する。
 
     Args:
       model: Pyomo モデル。
@@ -36,6 +36,7 @@ def add_dr_stone_constraints(
     _add_c8_transit_monitoring(model, spec)
     _add_c9_suspicious_battle_suppression(model, spec)
     _add_c10_suspicious_quasi_battle_suppression(model, spec)
+    _add_c11_final_move_composition(model, spec)
 
 
 def set_dr_stone_objective(
@@ -278,3 +279,40 @@ def _add_c10_suspicious_quasi_battle_suppression(
     )
     model.c10_5_quasi_battle_suppress_start = Constraint(model.T, rule=suppress_start)
     model.c10_6_quasi_battle_suppress_goal = Constraint(model.T, rule=suppress_goal)
+
+
+def _add_c11_final_move_composition(
+    model: ConcreteModel,
+    spec: DrStoneSpec,
+) -> None:
+    """C11-1〜C11-2: 最終移動の構成。
+
+    初めて finish_flag が 1 になるステップ t の直前ステップ t-1 の移動中に、
+    疑いなしクラフト・疑いなしバトルが各 1 人以上必要。
+    インデックスは t-1 側（T_finish_transition = {0,...,T^max-1}）で書く。
+    """
+    trusted_craft = tuple(spec.trusted_craft_members)
+    trusted_battle = tuple(spec.trusted_battle_members)
+
+    def final_move_trusted_craft(m: ConcreteModel, time_step: int) -> object:
+        finish_rise = m.finish_flag[time_step + 1] - m.finish_flag[time_step]
+        return (
+            sum(m.delta_transit[item, time_step] for item in trusted_craft)
+            >= finish_rise
+        )
+
+    def final_move_trusted_battle(m: ConcreteModel, time_step: int) -> object:
+        finish_rise = m.finish_flag[time_step + 1] - m.finish_flag[time_step]
+        return (
+            sum(m.delta_transit[item, time_step] for item in trusted_battle)
+            >= finish_rise
+        )
+
+    model.c11_1_final_move_trusted_craft = Constraint(
+        model.T_finish_transition,
+        rule=final_move_trusted_craft,
+    )
+    model.c11_2_final_move_trusted_battle = Constraint(
+        model.T_finish_transition,
+        rule=final_move_trusted_battle,
+    )

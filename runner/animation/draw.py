@@ -21,10 +21,10 @@ from animation.layout import (
     display_name,
 )
 from animation.phases import phase_label, ropeway_state
+from river_crossing_ip.types import ClassicSpec, DrStoneSpec, PuzzleSpec
 
 if TYPE_CHECKING:
     from river_crossing_ip.solve.result import SolveResult
-    from river_crossing_ip.types import DrStoneSpec
 
 # YouTube Shorts 縦型
 CANVAS_WIDTH = 1080
@@ -32,17 +32,18 @@ CANVAS_HEIGHT = 1920
 CANVAS_DPI = 100
 
 # レイアウト領域（y 座標、上から）
-HEADER_BOTTOM = 160
-NEAR_BOTTOM = 780
-ROPEWAY_BOTTOM = 1140
-# FAR は 1140〜1920
+HEADER_BOTTOM = 170
+NEAR_BOTTOM = 760
+ROPEWAY_BOTTOM = 1160
+# FAR は 1160〜1920
 
-CARD_COLS = 4
-CARD_GAP = 8
-HIGHLIGHT_COLOR = "#FFF9C4"
+CARD_GAP = 12
+HIGHLIGHT_COLOR = "#FFF59D"
+HIGHLIGHT_EDGE_COLOR = "#F9A825"
 SUSP_COLOR = "#C62828"
 BATTLE_COLOR = "#212121"
 TRUSTED_BATTLE_COLOR = "#1565C0"
+PILOT_COLOR = "#2E7D32"
 BG_COLOR = "#F5F5F5"
 ROPEWAY_BG = "#E3F2FD"
 DEFAULT_EDGE_COLOR = "#424242"
@@ -61,19 +62,29 @@ def create_canvas() -> tuple[Figure, Axes]:
     return figure, axes
 
 
+def _grid_cols(count: int) -> int:
+    """人数に応じた列数を返す（少ないほどカードを大きくする）。"""
+    if count <= 2:
+        return max(1, count)
+    if count <= 6:
+        return 2
+    return 3
+
+
 def _grid_metrics(
     count: int, area_top: float, area_bottom: float
-) -> tuple[float, float, float, float]:
-    """エリア内グリッドのカード幅・高さ・原点を返す。"""
+) -> tuple[float, float, float, float, int]:
+    """エリア内グリッドのカード幅・高さ・原点・列数を返す。"""
     area_height = area_bottom - area_top
     area_width = CANVAS_WIDTH - 40
     margin_x = 20.0
+    cols = _grid_cols(count)
 
-    rows = max(1, (count + CARD_COLS - 1) // CARD_COLS)
-    card_w = (area_width - CARD_GAP * (CARD_COLS - 1)) / CARD_COLS
-    card_h = min(88.0, (area_height - CARD_GAP * (rows - 1)) / rows)
-    card_h = max(52.0, card_h)
-    return card_w, card_h, margin_x, area_top
+    rows = max(1, (count + cols - 1) // cols)
+    card_w = (area_width - CARD_GAP * (cols - 1)) / cols
+    card_h = min(130.0, (area_height - CARD_GAP * (rows - 1)) / rows)
+    card_h = max(78.0, card_h)
+    return card_w, card_h, margin_x, area_top, cols
 
 
 def _draw_badge(
@@ -103,7 +114,7 @@ def _draw_badge(
         label,
         ha="center",
         va="center",
-        fontsize=7,
+        fontsize=9,
         fontweight="bold",
         color=text_color,
     )
@@ -116,37 +127,47 @@ def _draw_card(
     width: float,
     height: float,
     item: str,
-    weight_kg: int,
     *,
     card_style: CardStyle,
     highlighted: bool,
     name_fontsize: float,
-    weight_fontsize: float,
+    weight_kg: int | None = None,
+    weight_fontsize: float = 11.0,
 ) -> None:
     """メンバーカード1枚を描画する。"""
     facecolor = HIGHLIGHT_COLOR if highlighted else "white"
-    if card_style == CardStyle.TRUSTED_BATTLE:
+    if card_style == CardStyle.PILOT:
+        edgecolor = PILOT_COLOR
+        linestyle = "solid"
+        linewidth = 2.5
+    elif card_style == CardStyle.TRUSTED_BATTLE:
         edgecolor = TRUSTED_BATTLE_COLOR
         linestyle = "solid"
-        linewidth = 2.0
+        linewidth = 2.5
     elif card_style == CardStyle.SUSP_BATTLE:
         edgecolor = SUSP_COLOR
         linestyle = "solid"
-        linewidth = 2.0
+        linewidth = 2.5
     elif card_style == CardStyle.SUSP_ONLY:
         edgecolor = SUSP_COLOR
         linestyle = (0, (4, 3))
-        linewidth = 2.0
+        linewidth = 2.5
     else:
         edgecolor = DEFAULT_EDGE_COLOR
         linestyle = "solid"
-        linewidth = 1.2
+        linewidth = 1.8
+
+    if highlighted:
+        # 枠色は属性を残し、太さだけ強調する
+        linewidth = max(linewidth, 3.5)
+        if card_style == CardStyle.DEFAULT:
+            edgecolor = HIGHLIGHT_EDGE_COLOR
 
     patch = FancyBboxPatch(
         (x, y),
         width,
         height,
-        boxstyle="round,pad=0.02,rounding_size=6",
+        boxstyle="round,pad=0.02,rounding_size=8",
         linewidth=linewidth,
         edgecolor=edgecolor,
         facecolor=facecolor,
@@ -154,35 +175,52 @@ def _draw_card(
     )
     axes.add_patch(patch)
 
-    name_y = y + height * 0.32
-    weight_y = y + height * 0.72
+    draw_name_fs = name_fontsize + 2.0 if highlighted else name_fontsize
+    if weight_kg is None:
+        name_y = y + height * 0.55
+    else:
+        name_y = y + height * 0.38
+        weight_y = y + height * 0.72
+        draw_weight_fs = weight_fontsize + 1.5 if highlighted else weight_fontsize
+        axes.text(
+            x + width / 2,
+            weight_y,
+            f"{weight_kg} kg",
+            ha="center",
+            va="center",
+            fontsize=draw_weight_fs,
+            fontweight="bold" if highlighted else "normal",
+            color="#424242",
+        )
+
     axes.text(
         x + width / 2,
         name_y,
         display_name(item),
         ha="center",
         va="center",
-        fontsize=name_fontsize,
+        fontsize=draw_name_fs,
         fontweight="bold",
         color="#212121",
     )
-    axes.text(
-        x + width / 2,
-        weight_y,
-        f"{weight_kg} kg",
-        ha="center",
-        va="center",
-        fontsize=weight_fontsize,
-        color="#616161",
-    )
 
-    badge_h = 14.0
-    badge_w = min(38.0, width * 0.42)
-    badge_y = y + 4
-    badge_gap = 2.0
-    right_x = x + width - badge_w - 4
+    badge_h = 18.0
+    badge_w = min(52.0, width * 0.40)
+    badge_y = y + 5
+    badge_gap = 3.0
+    right_x = x + width - badge_w - 5
 
-    if card_style == CardStyle.SUSP_BATTLE:
+    if card_style == CardStyle.PILOT:
+        _draw_badge(
+            axes,
+            right_x,
+            badge_y,
+            badge_w,
+            badge_h,
+            "PILOT",
+            facecolor=PILOT_COLOR,
+        )
+    elif card_style == CardStyle.SUSP_BATTLE:
         battle_x = right_x
         susp_x = battle_x - badge_w - badge_gap
         _draw_badge(
@@ -230,26 +268,34 @@ def _draw_item_grid(
     items: tuple[str, ...],
     area_top: float,
     area_bottom: float,
-    spec: DrStoneSpec,
+    spec: PuzzleSpec,
     moved_items: frozenset[str],
 ) -> None:
     """エリア内にカードグリッドを描画する。"""
     if not items:
         return
 
-    card_w, card_h, margin_x, origin_y = _grid_metrics(
+    card_w, card_h, margin_x, origin_y, cols = _grid_metrics(
         len(items),
         area_top,
         area_bottom,
     )
-    name_fs = max(8.0, min(11.0, card_w * 0.14))
-    weight_fs = max(7.0, min(9.0, card_w * 0.11))
+    show_weight = isinstance(spec, DrStoneSpec)
+    if show_weight:
+        name_fs = max(13.0, min(20.0, card_w * 0.17))
+        weight_fs = max(11.0, min(16.0, card_w * 0.13))
+    else:
+        name_fs = max(16.0, min(28.0, card_w * 0.22))
+        weight_fs = 11.0
 
     for index, item in enumerate(items):
-        col = index % CARD_COLS
-        row = index // CARD_COLS
+        col = index % cols
+        row = index // cols
         x = margin_x + col * (card_w + CARD_GAP)
         y = origin_y + row * (card_h + CARD_GAP)
+        weight_kg: int | None = None
+        if show_weight:
+            weight_kg = int(spec.item_weights[item])
         _draw_card(
             axes,
             x,
@@ -257,10 +303,10 @@ def _draw_item_grid(
             card_w,
             card_h,
             item,
-            int(spec.item_weights[item]),
             card_style=card_style_for_item(item, spec),
             highlighted=item in moved_items,
             name_fontsize=name_fs,
+            weight_kg=weight_kg,
             weight_fontsize=weight_fs,
         )
 
@@ -273,7 +319,7 @@ def _draw_section_label(axes: Axes, label: str, y: float) -> None:
         label,
         ha="center",
         va="center",
-        fontsize=18,
+        fontsize=22,
         fontweight="bold",
         color="#37474F",
     )
@@ -284,50 +330,69 @@ def _draw_header(
     step: int,
     finish_step: int,
     layout: StepLayout,
-    max_load_kg: int,
+    max_load_kg: int | None,
 ) -> None:
     """ヘッダー（Step / Phase / Load）を描画する。"""
     phase = phase_label(step, len(layout.transit_items))
     axes.text(
         40,
-        50,
+        48,
         f"Step {step} / {finish_step}",
         ha="left",
         va="center",
-        fontsize=22,
+        fontsize=26,
         fontweight="bold",
         color="#212121",
     )
     axes.text(
         CANVAS_WIDTH / 2,
-        100,
+        105,
         phase,
         ha="center",
         va="center",
-        fontsize=20,
+        fontsize=28,
         fontweight="bold",
         color="#1565C0",
     )
-    if layout.load_kg is not None:
+    if layout.load_kg is not None and max_load_kg is not None:
         axes.text(
             CANVAS_WIDTH - 40,
-            50,
+            48,
             f"Load {layout.load_kg} / {max_load_kg} kg",
             ha="right",
             va="center",
-            fontsize=16,
+            fontsize=20,
+            fontweight="bold",
             color="#424242",
         )
 
 
-def _draw_ropeway_band(
+def _vehicle_label(
+    layout: StepLayout,
+    *,
+    vehicle_name: str,
+    dock_label: str | None,
+    is_empty: bool,
+    has_motion: bool,
+) -> str:
+    """中央帯の乗り物ラベルを組み立てる。"""
+    if layout.load_kg is not None:
+        return f"[{vehicle_name} {layout.load_kg} kg]"
+    if is_empty and has_motion:
+        return f"[{vehicle_name} empty]"
+    if dock_label is not None:
+        return f"[{vehicle_name} docked @ {dock_label}]"
+    return f"[{vehicle_name}]"
+
+
+def _draw_vehicle_band(
     axes: Axes,
     step: int,
     layout: StepLayout,
-    spec: DrStoneSpec,
+    spec: PuzzleSpec,
     moved_items: frozenset[str],
 ) -> None:
-    """ロープウェー帯を描画する。"""
+    """乗り物帯（BOAT / GONDOLA）を描画する。"""
     top = NEAR_BOTTOM + 10
     bottom = ROPEWAY_BOTTOM - 10
     band = FancyBboxPatch(
@@ -367,21 +432,21 @@ def _draw_ropeway_band(
             color="#1565C0",
         )
 
-    gondola_label = "[GONDOLA]"
-    if layout.load_kg is not None:
-        gondola_label = f"[GONDOLA {layout.load_kg} kg]"
-    elif state.is_empty and state.motion_symbol:
-        gondola_label = "[GONDOLA empty]"
-    elif state.dock_label is not None:
-        gondola_label = f"[GONDOLA docked @ {state.dock_label}]"
-
+    vehicle_name = "BOAT" if isinstance(spec, ClassicSpec) else "GONDOLA"
+    label = _vehicle_label(
+        layout,
+        vehicle_name=vehicle_name,
+        dock_label=state.dock_label,
+        is_empty=state.is_empty,
+        has_motion=bool(state.motion_symbol),
+    )
     axes.text(
         CANVAS_WIDTH / 2,
         cable_y - 30,
-        gondola_label,
+        label,
         ha="center",
         va="center",
-        fontsize=14,
+        fontsize=18,
         fontweight="bold",
         color="#37474F",
     )
@@ -403,7 +468,7 @@ def draw_step_frame(
     axes: Axes,
     step: int,
     result: SolveResult,
-    spec: DrStoneSpec,
+    spec: PuzzleSpec,
 ) -> None:
     """1ステップ分のフレームを描画する（axes をクリアして再描画）。"""
     axes.clear()
@@ -414,7 +479,11 @@ def draw_step_frame(
     assert result.finish_step is not None
     layout = build_step_layout(step, result.positions, spec)
 
-    _draw_header(axes, step, result.finish_step, layout, int(spec.max_load_weight))
+    max_load_kg: int | None = None
+    if isinstance(spec, DrStoneSpec):
+        max_load_kg = int(spec.max_load_weight)
+
+    _draw_header(axes, step, result.finish_step, layout, max_load_kg)
     _draw_section_label(axes, "NEAR SIDE", NEAR_BOTTOM - 24)
     _draw_item_grid(
         axes,
@@ -424,7 +493,7 @@ def draw_step_frame(
         spec,
         layout.moved_items,
     )
-    _draw_ropeway_band(axes, step, layout, spec, layout.moved_items)
+    _draw_vehicle_band(axes, step, layout, spec, layout.moved_items)
     _draw_section_label(axes, "FAR SIDE", ROPEWAY_BOTTOM + 14)
     _draw_item_grid(
         axes,
@@ -436,7 +505,12 @@ def draw_step_frame(
     )
 
 
-def draw_intro_frame(axes: Axes, finish_step: int) -> None:
+def draw_intro_frame(
+    axes: Axes,
+    finish_step: int,
+    *,
+    puzzle_type: str = "dr_stone",
+) -> None:
     """イントロフレームを描画する。"""
     axes.clear()
     axes.set_xlim(0, CANVAS_WIDTH)
@@ -444,17 +518,22 @@ def draw_intro_frame(axes: Axes, finish_step: int) -> None:
     axes.axis("off")
     axes.set_facecolor(BG_COLOR)
 
+    if puzzle_type == "classic":
+        title = "Classic River Crossing"
+    else:
+        title = "Dr. Stone River Crossing"
+
     lines = [
-        "Dr. Stone River Crossing",
+        title,
         "IP Optimal Solution",
         f"{finish_step} steps",
     ]
-    y_start = CANVAS_HEIGHT / 2 - 80
+    y_start = CANVAS_HEIGHT / 2 - 90
     for index, line in enumerate(lines):
-        fontsize = 32 if index == 0 else 24
+        fontsize = 40 if index == 0 else 28
         axes.text(
             CANVAS_WIDTH / 2,
-            y_start + index * 70,
+            y_start + index * 80,
             line,
             ha="center",
             va="center",

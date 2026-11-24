@@ -280,4 +280,43 @@ $$
 
 ### 最終移動の構成
 
-**TODO**: [README の最終移動ルール](../README.md#dr_stone)（フィニッシュ直前の移動に疑いなしクラフト・疑いなしバトルが各 1 人以上必要）は、定式が込み入るため一旦省略する。実装は本制約なしでも可能。今後、定式化と実装を行う。
+[README の最終移動ルール](../README.md#dr_stone) より、全員が到達側にいる状態の直前ステップで移動中のメンバーには、疑いなしクラフトメンバーと疑いなしバトルメンバーが各 1 人以上必要である。
+
+フィニッシュは [common.md のフィニッシュフラグ](common.md#フィニッシュフラグ)（C4）により単調に立ち上がる。したがって、初めて $f_t = 1$ となるステップ $t$ では $f_t - f_{t-1} = 1$ であり、それ以外では $0$ である（$t \in \{1, 2, \ldots, T^{\text{max}}\}$）。その $t$ の直前ステップ $t-1$ が最終移動である。
+
+論理形:
+
+$$
+f_t - f_{t-1} = 1
+\quad \Rightarrow \quad
+\sum_{i \in \mathcal{C}^{\text{trusted}}} \delta_{i,t-1}^{\text{transit}} \geq 1
+\quad (\forall t \in \{1, 2, \ldots, T^{\text{max}}\})
+$$
+
+$$
+f_t - f_{t-1} = 1
+\quad \Rightarrow \quad
+\sum_{i \in \mathcal{B}^{\text{trusted}}} \delta_{i,t-1}^{\text{transit}} \geq 1
+\quad (\forall t \in \{1, 2, \ldots, T^{\text{max}}\})
+$$
+
+右辺を $f_t - f_{t-1}$ に置き換えると、含意は次の線形不等式と等価である（$f_t = f_{t-1}$ のときは自明、$f_t - f_{t-1} = 1$ のときだけ人数下限が効く）:
+
+$$
+\sum_{i \in \mathcal{C}^{\text{trusted}}} \delta_{i,t-1}^{\text{transit}}
+\geq f_t - f_{t-1}
+\quad (\forall t \in \{1, 2, \ldots, T^{\text{max}}\})
+\tag{C11-1}
+$$
+
+$$
+\sum_{i \in \mathcal{B}^{\text{trusted}}} \delta_{i,t-1}^{\text{transit}}
+\geq f_t - f_{t-1}
+\quad (\forall t \in \{1, 2, \ldots, T^{\text{max}}\})
+\tag{C11-2}
+$$
+
+補足:
+
+- 初回フィニッシュは偶数ステップにしか起きない（奇数ステップでは移動中の対象が到達側にいないため）。そのとき $t-1$ は奇数の移動ステップである。
+- $f_0 = 1$（初期から全員到達側）のときは差分が常に $0$ となり、本制約は無効化される。

@@ -13,9 +13,9 @@ sys.path.insert(0, str(RUNNER_DIR))
 
 HAS_ANIMATE = importlib.util.find_spec("matplotlib") is not None
 
-from river_crossing_ip.engine import Engine  # noqa: E402
-from river_crossing_ip.load_data import load_spec  # noqa: E402
-from river_crossing_ip.types import DrStoneSpec  # noqa: E402
+from river_crossing_ip.engine import Engine
+from river_crossing_ip.load_data import load_spec
+from river_crossing_ip.types import DrStoneSpec
 
 EXAMPLES_DIR = Path(__file__).resolve().parents[1] / "examples"
 DR_STONE_YAML = EXAMPLES_DIR / "dr_stone.yaml"

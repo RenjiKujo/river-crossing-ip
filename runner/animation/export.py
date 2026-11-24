@@ -15,12 +15,29 @@ if TYPE_CHECKING:
     from matplotlib.axes import Axes
 
     from river_crossing_ip.solve.result import SolveResult
-    from river_crossing_ip.types import DrStoneSpec
+    from river_crossing_ip.types import PuzzleSpec
 
 FFMPEG_INSTALL_HINT = (
     "ffmpeg is required for mp4 export. "
     'Install animate extras (pip install -e ".[animate]") '
     "or system ffmpeg: sudo apt install ffmpeg"
+)
+
+# Shorts 向け: 平坦UIでも文字が潰れないよう高めの目標 bitrate を固定
+# （CRF のみだと静止画に近く ~200kbps まで落ち、YouTube 再エンコードで劣化する）
+FFMPEG_CODEC = "libx264"
+FFMPEG_BITRATE_KBPS = 8000
+FFMPEG_EXTRA_ARGS = (
+    "-pix_fmt",
+    "yuv420p",
+    "-maxrate",
+    "10M",
+    "-bufsize",
+    "16M",
+    "-preset",
+    "medium",
+    "-movflags",
+    "+faststart",
 )
 
 
@@ -47,7 +64,7 @@ def export_mp4(
     figure: Figure,
     axes: Axes,
     result: SolveResult,
-    spec: DrStoneSpec,
+    spec: PuzzleSpec,
     output_path: Path,
     *,
     fps: int = 30,
@@ -60,7 +77,7 @@ def export_mp4(
       figure: matplotlib Figure。
       axes: 描画 Axes。
       result: 求解結果。
-      spec: dr_stone 問題定義。
+      spec: 問題定義（classic / dr_stone）。
       output_path: 出力 mp4 パス。
       fps: フレームレート。
       intro_seconds: イントロ表示秒数。
@@ -77,14 +94,23 @@ def export_mp4(
     _configure_ffmpeg()
 
     try:
-        writer = FFMpegWriter(fps=fps)
+        writer = FFMpegWriter(
+            fps=fps,
+            codec=FFMPEG_CODEC,
+            bitrate=FFMPEG_BITRATE_KBPS,
+            extra_args=list(FFMPEG_EXTRA_ARGS),
+        )
     except Exception as exc:
         raise RuntimeError(FFMPEG_INSTALL_HINT) from exc
 
     try:
         with writer.saving(figure, str(output_path), dpi=CANVAS_DPI):
             if include_intro:
-                draw_intro_frame(axes, result.finish_step)
+                draw_intro_frame(
+                    axes,
+                    result.finish_step,
+                    puzzle_type=spec.puzzle_type,
+                )
                 _grab_for_seconds(writer, figure, intro_seconds, fps)
 
             for step in range(result.finish_step + 1):
