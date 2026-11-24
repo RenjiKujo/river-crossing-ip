@@ -6,13 +6,14 @@ from dataclasses import dataclass
 from enum import Enum
 
 from river_crossing_ip.solve.result import Location
-from river_crossing_ip.types import DrStoneSpec
+from river_crossing_ip.types import ClassicSpec, DrStoneSpec, PuzzleSpec
 
 
 class CardStyle(str, Enum):
     """メンバーカードの枠・バッジ種別。"""
 
     DEFAULT = "default"
+    PILOT = "pilot"
     TRUSTED_BATTLE = "trusted_battle"
     SUSP_ONLY = "susp_only"
     SUSP_BATTLE = "susp_battle"
@@ -27,7 +28,7 @@ class StepLayout:
       far_items: 到達側（Far）にいる対象（items 順）。
       transit_items: 移動中の対象（items 順）。
       moved_items: 直前ステップから位置が変わった対象。
-      load_kg: 移動中の積載重量（kg）。移動中0人のとき None。
+      load_kg: 移動中の積載重量（kg）。classic または移動中0人のとき None。
     """
 
     near_items: tuple[str, ...]
@@ -42,20 +43,27 @@ def display_name(item: str) -> str:
     return item.title()
 
 
-def card_style_for_item(item: str, spec: DrStoneSpec) -> CardStyle:
+def card_style_for_item(item: str, spec: PuzzleSpec) -> CardStyle:
     """対象のカード枠・バッジ種別を返す。
 
-    trusted battle（White）: battle_members かつ suspicious でない。
-    SUSP battle: 両方に属する（例: hyoga）。
-    SUSP only: suspicious のみ（例: zeno）。
+    classic: pilots に属する対象は PILOT。
+    dr_stone:
+      trusted battle（White）: battle_members かつ suspicious でない。
+      SUSP battle: 両方に属する（例: hyoga）。
+      SUSP only: suspicious のみ（例: zeno）。
 
     Args:
       item: 対象名。
-      spec: dr_stone 問題定義。
+      spec: 問題定義。
 
     Returns:
       カードスタイル。
     """
+    if isinstance(spec, ClassicSpec):
+        if item in spec.pilots:
+            return CardStyle.PILOT
+        return CardStyle.DEFAULT
+
     is_suspicious = item in spec.suspicious_members
     is_battle = item in spec.battle_members
     if is_suspicious and is_battle:
@@ -101,14 +109,14 @@ def compute_load_kg(
 def build_step_layout(
     step: int,
     positions: dict[int, dict[str, Location]],
-    spec: DrStoneSpec,
+    spec: PuzzleSpec,
 ) -> StepLayout:
     """1ステップ分の配置情報を構築する。
 
     Args:
       step: 時間ステップ。
       positions: 全ステップの位置辞書。
-      spec: dr_stone 問題定義。
+      spec: 問題定義。
 
     Returns:
       配置情報。
@@ -116,12 +124,15 @@ def build_step_layout(
     current = positions[step]
     previous = positions.get(step - 1)
     transit_items = items_at_location(current, "transit", spec.items)
+    load_kg: int | None = None
+    if isinstance(spec, DrStoneSpec):
+        load_kg = compute_load_kg(transit_items, spec.item_weights)
     return StepLayout(
         near_items=items_at_location(current, "start", spec.items),
         far_items=items_at_location(current, "goal", spec.items),
         transit_items=transit_items,
         moved_items=detect_moved(previous, current),
-        load_kg=compute_load_kg(transit_items, spec.item_weights),
+        load_kg=load_kg,
     )
 
 
@@ -129,8 +140,8 @@ def step_duration(
     step: int,
     positions: dict[int, dict[str, Location]],
     *,
-    unchanged_seconds: float = 0.5,
-    changed_seconds: float = 1.5,
+    unchanged_seconds: float = 0.6,
+    changed_seconds: float = 2.0,
 ) -> float:
     """ステップの表示秒数を返す。
 

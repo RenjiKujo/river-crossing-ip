@@ -9,10 +9,12 @@ from pathlib import Path
 
 from river_crossing_ip.engine import Engine
 from river_crossing_ip.load_data import SpecLoadError, load_spec
-from river_crossing_ip.types import DrStoneSpec
+from river_crossing_ip.types import ClassicSpec, DrStoneSpec, PuzzleSpec
 
 from animation.draw import create_canvas
 from animation.export import export_mp4
+
+SUPPORTED_SPECS = (ClassicSpec, DrStoneSpec)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -25,19 +27,21 @@ def main(argv: list[str] | None = None) -> int:
       終了コード。
     """
     parser = argparse.ArgumentParser(
-        description="Export dr_stone solve result as a short-form mp4 animation",
+        description=(
+            "Export classic / dr_stone solve result as a short-form mp4 animation"
+        ),
     )
     parser.add_argument(
         "--spec",
         type=Path,
         required=True,
-        help="Problem spec YAML path (dr_stone only)",
+        help="Problem spec YAML path (classic or dr_stone)",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("out/dr_stone_short.mp4"),
-        help="Output mp4 path",
+        default=None,
+        help="Output mp4 path (default: out/{puzzle_type}_short.mp4)",
     )
     parser.add_argument(
         "--intro-seconds",
@@ -63,15 +67,37 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
-    if not isinstance(spec, DrStoneSpec):
+    if not isinstance(spec, SUPPORTED_SPECS):
         print(
-            "error: animation supports puzzle_type=dr_stone only",
+            "error: animation supports puzzle_type=classic or dr_stone only",
             file=sys.stderr,
         )
         return 1
 
+    output_path = args.output
+    if output_path is None:
+        output_path = Path("out") / f"{spec.puzzle_type}_short.mp4"
+
+    return _export_animation(
+        spec,
+        output_path,
+        intro_seconds=args.intro_seconds,
+        include_intro=not args.no_intro,
+        tee=args.tee,
+    )
+
+
+def _export_animation(
+    spec: PuzzleSpec,
+    output_path: Path,
+    *,
+    intro_seconds: float,
+    include_intro: bool,
+    tee: bool,
+) -> int:
+    """求解して mp4 を書き出す。"""
     try:
-        result = Engine().run_from_spec(spec, tee=args.tee)
+        result = Engine().run_from_spec(spec, tee=tee)
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
@@ -87,9 +113,9 @@ def main(argv: list[str] | None = None) -> int:
             axes,
             result,
             spec,
-            args.output,
-            intro_seconds=args.intro_seconds,
-            include_intro=not args.no_intro,
+            output_path,
+            intro_seconds=intro_seconds,
+            include_intro=include_intro,
         )
     except RuntimeError as exc:
         print(f"error: {exc}", file=sys.stderr)
@@ -99,7 +125,7 @@ def main(argv: list[str] | None = None) -> int:
 
         plt.close(figure)
 
-    print(f"wrote {args.output}")
+    print(f"wrote {output_path}")
     return 0
 
 
