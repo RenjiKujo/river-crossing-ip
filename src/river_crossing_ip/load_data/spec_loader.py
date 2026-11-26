@@ -1,4 +1,4 @@
-"""問題定義 YAML の読み込み。"""
+"""Loading of problem definition YAML."""
 
 from __future__ import annotations
 
@@ -11,21 +11,21 @@ from river_crossing_ip.types import ClassicSpec, DrStoneSpec, GrudgeRule, Puzzle
 
 
 class SpecLoadError(ValueError):
-    """問題定義 YAML の読み込み・検証エラー。"""
+    """Error raised when loading or validating a problem definition YAML."""
 
 
 def load_spec(path: str | Path) -> PuzzleSpec:
-    """YAML ファイルから問題定義を読み込む。
+    """Load a problem definition from a YAML file.
 
     Args:
-      path: YAML ファイルパス。
+      path: YAML file path.
 
     Returns:
-      puzzle_type に応じた問題定義。
+      Problem definition corresponding to the puzzle_type.
 
     Raises:
-      SpecLoadError: ファイル読み込み失敗、必須キー欠落、検証失敗時。
-      FileNotFoundError: ファイルが存在しない場合。
+      SpecLoadError: If file loading fails, a required key is missing, or validation fails.
+      FileNotFoundError: If the file does not exist.
     """
     spec_path = Path(path)
     raw = _load_yaml(spec_path)
@@ -40,7 +40,7 @@ def load_spec(path: str | Path) -> PuzzleSpec:
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
-    """YAML を辞書として読み込む。"""
+    """Load YAML as a dictionary."""
     if not path.is_file():
         raise FileNotFoundError(f"spec file not found: {path}")
 
@@ -54,7 +54,7 @@ def _load_yaml(path: Path) -> dict[str, Any]:
 
 
 def _parse_classic(raw: dict[str, Any]) -> ClassicSpec:
-    """classic 用 YAML を ClassicSpec に変換する。"""
+    """Convert classic YAML into a ClassicSpec."""
     items = _parse_items(raw)
     capacity = _require_positive_int(raw, "capacity")
     buffer_time = _require_non_negative_int(raw, "buffer_time", default=0)
@@ -74,7 +74,7 @@ def _parse_classic(raw: dict[str, Any]) -> ClassicSpec:
 
 
 def _parse_dr_stone(raw: dict[str, Any]) -> DrStoneSpec:
-    """dr_stone 用 YAML を DrStoneSpec に変換する。"""
+    """Convert dr_stone YAML into a DrStoneSpec."""
     items = _parse_items(raw)
     capacity = _require_positive_int(raw, "capacity")
     buffer_time = _require_non_negative_int(raw, "buffer_time", default=0)
@@ -111,7 +111,7 @@ def _parse_dr_stone(raw: dict[str, Any]) -> DrStoneSpec:
 
 
 def _parse_items(raw: dict[str, Any]) -> tuple[str, ...]:
-    """items リストを検証して tuple に変換する。"""
+    """Validate the items list and convert it to a tuple."""
     if "items" not in raw:
         raise SpecLoadError("missing required key: items")
 
@@ -139,7 +139,7 @@ def _parse_name_set(
     *,
     default: list[str] | None = None,
 ) -> frozenset[str]:
-    """items に含まれる名前の集合をパースする。"""
+    """Parse a set of names contained in items."""
     if key not in raw:
         if default is None:
             raise SpecLoadError(f"missing required key: {key}")
@@ -166,7 +166,7 @@ def _parse_forbidden_co_presence(
     raw: dict[str, Any],
     items: tuple[str, ...],
 ) -> tuple[GrudgeRule, ...]:
-    """forbidden_co_presence を GrudgeRule の tuple に変換する。"""
+    """Convert forbidden_co_presence into a tuple of GrudgeRule."""
     if "forbidden_co_presence" not in raw:
         raise SpecLoadError("missing required key: forbidden_co_presence")
 
@@ -216,7 +216,7 @@ def _parse_rule_name_list(
     item_set: set[str],
     rule_index: int,
 ) -> list[str]:
-    """遺恨ルール内の名前リストを検証する。"""
+    """Validate a list of names within a grudge rule."""
     if key not in entry:
         raise SpecLoadError(f"forbidden_co_presence[{rule_index}] missing key: {key}")
 
@@ -243,7 +243,7 @@ def _parse_item_weights(
     raw: dict[str, Any],
     items: tuple[str, ...],
 ) -> dict[str, float]:
-    """item_weights を全 items 分パースする。"""
+    """Parse item_weights for all items."""
     if "item_weights" not in raw:
         raise SpecLoadError("missing required key: item_weights")
 
@@ -267,7 +267,7 @@ def _parse_item_weights(
 
 
 def _require_str(raw: dict[str, Any], key: str) -> str:
-    """必須の文字列キーを取得する。"""
+    """Get a required string key."""
     if key not in raw:
         raise SpecLoadError(f"missing required key: {key}")
     value = raw[key]
@@ -277,7 +277,7 @@ def _require_str(raw: dict[str, Any], key: str) -> str:
 
 
 def _require_positive_int(raw: dict[str, Any], key: str) -> int:
-    """正の整数キーを取得する。"""
+    """Get a positive integer key."""
     if key not in raw:
         raise SpecLoadError(f"missing required key: {key}")
     value = raw[key]
@@ -292,7 +292,7 @@ def _require_non_negative_int(
     *,
     default: int,
 ) -> int:
-    """非負整数キーを取得する（省略時は default）。"""
+    """Get a non-negative integer key (default if omitted)."""
     if key not in raw:
         return default
     value = raw[key]
@@ -302,7 +302,7 @@ def _require_non_negative_int(
 
 
 def _require_positive_float(raw: dict[str, Any], key: str) -> float:
-    """正の実数キーを取得する。"""
+    """Get a positive real number key."""
     if key not in raw:
         raise SpecLoadError(f"missing required key: {key}")
     value = raw[key]
@@ -317,7 +317,7 @@ def _require_non_negative_float(
     *,
     default: float,
 ) -> float:
-    """非負実数キーを取得する（省略時は default）。"""
+    """Get a non-negative real number key (default if omitted)."""
     if key not in raw:
         return default
     value = raw[key]

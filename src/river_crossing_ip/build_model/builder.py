@@ -1,4 +1,4 @@
-"""Pyomo モデル構築。"""
+"""Pyomo model construction."""
 
 from __future__ import annotations
 
@@ -17,23 +17,23 @@ from river_crossing_ip.types import PuzzleSpec
 
 
 class ModelBuilder:
-    """問題定義から Pyomo モデルを構築する。"""
+    """Build a Pyomo model from a problem definition."""
 
     def __init__(self, spec: PuzzleSpec) -> None:
-        """ModelBuilder を初期化する。
+        """Initialize the ModelBuilder.
 
         Args:
-          spec: 問題定義。
+          spec: Problem definition.
         """
         self.spec = spec
         self.indices = build_indices(spec)
         self.model: ConcreteModel | None = None
 
     def build(self) -> ConcreteModel:
-        """モデルを構築して返す。
+        """Build and return the model.
 
         Returns:
-          構築済み ConcreteModel。
+          Built ConcreteModel.
         """
         self.model = ConcreteModel()
         add_common_variables(self.model, self.spec, self.indices)
@@ -44,12 +44,12 @@ class ModelBuilder:
 
 
 def build_model(spec: PuzzleSpec) -> ConcreteModel:
-    """問題定義から Pyomo モデルを構築する。
+    """Build a Pyomo model from a problem definition.
 
     Args:
-      spec: 問題定義。
+      spec: Problem definition.
 
     Returns:
-      構築済み ConcreteModel。
+      Built ConcreteModel.
     """
     return ModelBuilder(spec).build()

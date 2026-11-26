@@ -1,4 +1,4 @@
-"""川渡りパズルのドメインモデル型定義。"""
+"""Domain model type definitions for the river crossing puzzle."""
 
 from __future__ import annotations
 
@@ -7,12 +7,12 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class GrudgeRule:
-    """遺恨ルール（classic の forbidden_co_presence 1件分）。
+    """Grudge rule (one entry of classic forbidden_co_presence).
 
     Attributes:
-      members: 同地点にいると危険な対象の集合（定式化の H_k）。
-      guardians: members が同地点にいるとき必要な仲裁対象（定式化の G_k）。
-      description: ルールの説明（任意）。
+      members: Set of items that are dangerous when co-located (H_k in the formulation).
+      guardians: Mediators required when members are co-located (G_k in the formulation).
+      description: Rule description (optional).
     """
 
     members: frozenset[str]
@@ -22,14 +22,14 @@ class GrudgeRule:
 
 @dataclass(frozen=True)
 class BaseSpec:
-    """puzzle_type 共通の問題定義。
+    """Problem definition common to all puzzle_types.
 
     Attributes:
-      puzzle_type: 問題タイプ識別子。
-      items: 移動対象の名前（順序固定でインデックス i に対応）。
-      capacity: 1回の移動で同時に運べる最大人数。
-      initial_far_side: ステップ0から到達側にいる対象。
-      buffer_time: ホライゾン計算用バッファ（定式化の T_buffer）。
+      puzzle_type: Problem type identifier.
+      items: Names of items to move (fixed order, corresponding to index i).
+      capacity: Maximum number of items carried in a single move.
+      initial_far_side: Items on the goal side from step 0.
+      buffer_time: Buffer for horizon computation (T_buffer in the formulation).
     """
 
     puzzle_type: str
@@ -41,11 +41,11 @@ class BaseSpec:
 
 @dataclass(frozen=True)
 class ClassicSpec(BaseSpec):
-    """classic 問題定義。
+    """Classic problem definition.
 
     Attributes:
-      pilots: 輸送手段を操縦できる対象（定式化の P）。
-      forbidden_co_presence: 遺恨ルールの一覧。
+      pilots: Items that can operate the vehicle (P in the formulation).
+      forbidden_co_presence: List of grudge rules.
     """
 
     pilots: frozenset[str] = frozenset()
@@ -54,17 +54,17 @@ class ClassicSpec(BaseSpec):
 
 @dataclass(frozen=True)
 class DrStoneSpec(BaseSpec):
-    """dr_stone 問題定義。
+    """dr_stone problem definition.
 
     Attributes:
-      item_weights: 対象ごとの重量。
-      max_load_weight: 輸送手段の最大積載重量（定式化の W^max）。
-      alpha: 積載上限 eta のペナルティ係数。
-      beta: 積載重量合計 zeta のペナルティ係数。
-      suspicious_members: 疑いありメンバー。
-      craft_members: クラフトメンバー。
-      battle_members: バトルメンバー。
-      quasi_battle_members: 准バトルメンバー。
+      item_weights: Weight of each item.
+      max_load_weight: Maximum load weight of the vehicle (W^max in the formulation).
+      alpha: Penalty coefficient for the load limit eta.
+      beta: Penalty coefficient for the total load weight zeta.
+      suspicious_members: Suspicious members.
+      craft_members: Craft members.
+      battle_members: Battle members.
+      quasi_battle_members: Quasi-battle members.
     """
 
     item_weights: dict[str, float]
@@ -78,32 +78,32 @@ class DrStoneSpec(BaseSpec):
 
     @property
     def suspicious_craft_members(self) -> frozenset[str]:
-        """疑いありクラフトメンバー（C ∩ S^sus）。"""
+        """Suspicious craft members (C ∩ S^sus)."""
         return frozenset(self.craft_members & self.suspicious_members)
 
     @property
     def trusted_craft_members(self) -> frozenset[str]:
-        """疑いなしクラフトメンバー（C \\ S^sus）。"""
+        """Non-suspicious craft members (C \\ S^sus)."""
         return frozenset(self.craft_members - self.suspicious_members)
 
     @property
     def suspicious_battle_members(self) -> frozenset[str]:
-        """疑いありバトルメンバー（B ∩ S^sus）。"""
+        """Suspicious battle members (B ∩ S^sus)."""
         return frozenset(self.battle_members & self.suspicious_members)
 
     @property
     def trusted_battle_members(self) -> frozenset[str]:
-        """疑いなしバトルメンバー（B \\ S^sus）。"""
+        """Non-suspicious battle members (B \\ S^sus)."""
         return frozenset(self.battle_members - self.suspicious_members)
 
     @property
     def suspicious_quasi_battle_members(self) -> frozenset[str]:
-        """疑いあり准バトルメンバー（Q ∩ S^sus）。"""
+        """Suspicious quasi-battle members (Q ∩ S^sus)."""
         return frozenset(self.quasi_battle_members & self.suspicious_members)
 
     @property
     def trusted_quasi_battle_members(self) -> frozenset[str]:
-        """疑いなし准バトルメンバー（Q \\ S^sus）。"""
+        """Non-suspicious quasi-battle members (Q \\ S^sus)."""
         return frozenset(self.quasi_battle_members - self.suspicious_members)
 
 

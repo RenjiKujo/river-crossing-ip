@@ -1,4 +1,4 @@
-"""時間ステップ集合とインデックスの導出。"""
+"""Derivation of time step sets and indices."""
 
 from __future__ import annotations
 
@@ -10,20 +10,20 @@ from river_crossing_ip.types import BaseSpec, PuzzleSpec
 
 @dataclass(frozen=True)
 class ProblemIndices:
-    """定式化で用いるインデックス・集合のまとめ。
+    """Summary of indices and sets used in the formulation.
 
     Attributes:
-      items: 移動対象名（順序固定）。
-      item_to_index: 対象名からインデックスへの写像。
-      max_time_step: 最大時間ステップ T^max。
-      time_steps: 時間ステップ集合 T。
-      even_time_steps: 偶数ステップ集合 T^even。
-      odd_time_steps: 奇数ステップ集合 T^odd。
-      time_steps_4n_plus_1: 出発側→到達側移動ステップ集合。
-      time_steps_4n_plus_3: 到達側→出発側移動ステップ集合。
-      capacity: 最大積載人数 C。
-      initial_far_side_items: ステップ0の到達側対象 I_0^goal。
-      buffer_time: ホライゾンバッファ T^buffer。
+      items: Names of items to move (fixed order).
+      item_to_index: Mapping from item name to index.
+      max_time_step: Maximum time step T^max.
+      time_steps: Time step set T.
+      even_time_steps: Even step set T^even.
+      odd_time_steps: Odd step set T^odd.
+      time_steps_4n_plus_1: Set of start-to-goal move steps.
+      time_steps_4n_plus_3: Set of goal-to-start move steps.
+      capacity: Maximum number of items per load C.
+      initial_far_side_items: Items on the goal side at step 0, I_0^goal.
+      buffer_time: Horizon buffer T^buffer.
     """
 
     items: tuple[str, ...]
@@ -44,17 +44,17 @@ def compute_max_time_step(
     capacity: int,
     buffer_time: int,
 ) -> int:
-    """最大時間ステップ T^max を計算する。
+    """Compute the maximum time step T^max.
 
     T^max = 4 * (ceil(|I| / C) + T^buffer) + 2
 
     Args:
-      num_items: 対象数 |I|。
-      capacity: 最大積載人数 C。
-      buffer_time: バッファ T^buffer。
+      num_items: Number of items |I|.
+      capacity: Maximum number of items per load C.
+      buffer_time: Buffer T^buffer.
 
     Returns:
-      最大時間ステップ。
+      Maximum time step.
     """
     if num_items < 0:
         raise ValueError(f"num_items must be non-negative, got {num_items}")
@@ -67,38 +67,38 @@ def compute_max_time_step(
 
 
 def build_time_steps(max_time_step: int) -> tuple[int, ...]:
-    """時間ステップ集合 T = {0, ..., T^max} を返す。"""
+    """Return the time step set T = {0, ..., T^max}."""
     return tuple(range(max_time_step + 1))
 
 
 def build_even_time_steps(max_time_step: int) -> tuple[int, ...]:
-    """偶数ステップ集合 T^even = {0, 2, 4, ..., T^max} を返す。"""
+    """Return the even step set T^even = {0, 2, 4, ..., T^max}."""
     return tuple(range(0, max_time_step + 1, 2))
 
 
 def build_odd_time_steps(max_time_step: int) -> tuple[int, ...]:
-    """奇数ステップ集合 T^odd = {1, 3, ..., T^max - 1} を返す。"""
+    """Return the odd step set T^odd = {1, 3, ..., T^max - 1}."""
     return tuple(range(1, max_time_step, 2))
 
 
 def build_time_steps_4n_plus_1(max_time_step: int) -> tuple[int, ...]:
-    """出発側→到達側移動ステップ集合 T^{4n+1} を返す。"""
+    """Return the set of start-to-goal move steps T^{4n+1}."""
     return tuple(range(1, max_time_step, 4))
 
 
 def build_time_steps_4n_plus_3(max_time_step: int) -> tuple[int, ...]:
-    """到達側→出発側移動ステップ集合 T^{4n+3} を返す。"""
+    """Return the set of goal-to-start move steps T^{4n+3}."""
     return tuple(range(3, max_time_step - 2, 4))
 
 
 def build_indices(spec: PuzzleSpec | BaseSpec) -> ProblemIndices:
-    """問題定義からインデックス・集合を構築する。
+    """Build indices and sets from a problem definition.
 
     Args:
-      spec: 問題定義。
+      spec: Problem definition.
 
     Returns:
-      定式化用インデックス。
+      Indices for the formulation.
     """
     max_time_step = compute_max_time_step(
         num_items=len(spec.items),

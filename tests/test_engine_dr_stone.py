@@ -1,4 +1,4 @@
-"""dr_stone 向け Engine 統合テスト。"""
+"""Engine integration test for dr_stone."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ EXAMPLES_DIR = Path(__file__).resolve().parents[1] / "examples"
 
 
 class DrStoneEngineSolveTest(unittest.TestCase):
-    """dr_stone.yaml の Engine.run 統合テスト。"""
+    """Engine.run integration test for dr_stone.yaml."""
 
     def test_dr_stone_example_is_optimal(self) -> None:
         result = Engine().run(EXAMPLES_DIR / "dr_stone.yaml")

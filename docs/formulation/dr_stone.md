@@ -1,51 +1,53 @@
-# 川渡りパズル定式化（dr_stone）
+# River-crossing formulation (dr_stone)
 
-`puzzle_type: dr_stone` 向けの追加定式化。共通骨格は [common.md](common.md)、ルールの説明は [../README.md](../README.md#dr_stone) を参照。
+**Languages:** [English](dr_stone.md) | [日本語](dr_stone.ja.md)
 
-インデックス・決定変数は [common.md](common.md) に従う。以下は dr_stone 固有のパラメータ・集合・目的関数・制約を記す。
+Extra formulation for `puzzle_type: dr_stone`. Shared skeleton: [common.md](common.md). Rule narrative: [../README.md](../README.md#dr_stone).
 
-## パラメータ
+Indices and decision variables follow [common.md](common.md). Below are dr_stone-only parameters, sets, variables, objective, and constraints.
 
-| 記号 | 定義域 | 説明 | 参照 |
-|------|--------|------|------|
-| $W_i$ | $\mathbb{R}_{\geq 0}$（$i \in \mathcal{I}$） | 対象 $i$ の重量 | `item_weight[i]` |
-| $W^{\text{max}}$ | $\mathbb{R}_{> 0}$ | 輸送手段の最大積載重量 | `max_load_weight` |
-| $A$ | $\mathbb{R}_{\geq 0}$ | 積載重量上限 $\eta$ のペナルティ係数 | `ALPHA` |
-| $B$ | $\mathbb{R}_{\geq 0}$ | 移動時重量合計 $\zeta$ のペナルティ係数 | `BETA` |
+## Parameters
 
-## 集合
+| Symbol | Domain | Description | Code |
+|--------|--------|-------------|------|
+| $W_i$ | $\mathbb{R}_{\geq 0}$ ($i \in \mathcal{I}$) | Weight of item $i$ | `item_weight[i]` |
+| $W^{\text{max}}$ | $\mathbb{R}_{> 0}$ | Maximum vehicle load weight | `max_load_weight` |
+| $A$ | $\mathbb{R}_{\geq 0}$ | Penalty coefficient on load ceiling $\eta$ | `ALPHA` |
+| $B$ | $\mathbb{R}_{\geq 0}$ | Penalty coefficient on total transit weight $\zeta$ | `BETA` |
 
-| 記号 | 全要素 | 説明 | 参照 |
-|------|------|------|------|
-| $\mathcal{S}^{\text{sus}}$ | $\mathcal{S}^{\text{sus}} \subseteq \mathcal{I}$ | 疑いありメンバーの集合。例: $\mathcal{S}^{\text{sus}} = \{\text{hyoga}, \text{zeno}\}$ | `suspicious_members` |
-| $\mathcal{C}$ | $\mathcal{C} \subseteq \mathcal{I}$ | クラフトメンバーの集合。例: $\mathcal{C} = \{\text{senku}, \text{kaseki}, \text{chrome}, \text{zeno}\}$ | `craft_members` |
-| $\mathcal{C}^{\text{sus}}$ | $\mathcal{C}^{\text{sus}} = \mathcal{C} \cap \mathcal{S}^{\text{sus}}$ | 疑いありクラフトメンバーの集合 | `suspicious_craft_members` |
-| $\mathcal{C}^{\text{trusted}}$ | $\mathcal{C}^{\text{trusted}} = \mathcal{C} \setminus \mathcal{S}^{\text{sus}}$ | 疑いなしクラフトメンバーの集合 | `trusted_craft_members` |
-| $\mathcal{B}$ | $\mathcal{B} \subseteq \mathcal{I}$ | バトルメンバーの集合。例: $\mathcal{B} = \{\text{tsukasa}, \text{kohaku}, \text{taiju}, \text{hyoga}\}$ | `battle_members` |
-| $\mathcal{B}^{\text{sus}}$ | $\mathcal{B}^{\text{sus}} = \mathcal{B} \cap \mathcal{S}^{\text{sus}}$ | 疑いありバトルメンバーの集合 | `suspicious_battle_members` |
-| $\mathcal{B}^{\text{trusted}}$ | $\mathcal{B}^{\text{trusted}} = \mathcal{B} \setminus \mathcal{S}^{\text{sus}}$ | 疑いなしバトルメンバーの集合 | `trusted_battle_members` |
-| $\mathcal{Q}$ | $\mathcal{Q} \subseteq \mathcal{I}$ | 准バトルメンバー（思春期を超えた男）。例: $\mathcal{Q} = \{\text{senku}, \text{zeno}, \text{kaseki}, \text{gen}, \text{chrome}, \text{ukyo}, \text{ryusui}, \text{max}, \text{carlos}\}$ | `quasi_battle_members` |
-| $\mathcal{Q}^{\text{sus}}$ | $\mathcal{Q}^{\text{sus}} = \mathcal{Q} \cap \mathcal{S}^{\text{sus}}$ | 疑いあり准バトルメンバー | `suspicious_quasi_battle_members` |
-| $\mathcal{Q}^{\text{trusted}}$ | $\mathcal{Q}^{\text{trusted}} = \mathcal{Q} \setminus \mathcal{S}^{\text{sus}}$ | 疑いなし准バトルメンバー | `trusted_quasi_battle_members` |
+## Sets
 
-$\mathcal{S}^{\text{sus}}$、$\mathcal{C}$、$\mathcal{B}$、$\mathcal{Q}$ は問題ごとに定義する。$\mathcal{C}^{\text{sus}}$、$\mathcal{C}^{\text{trusted}}$、$\mathcal{B}^{\text{sus}}$、$\mathcal{B}^{\text{trusted}}$、$\mathcal{Q}^{\text{sus}}$、$\mathcal{Q}^{\text{trusted}}$ はそこから導く。
+| Symbol | Elements | Description | Code |
+|--------|----------|-------------|------|
+| $\mathcal{S}^{\text{sus}}$ | $\mathcal{S}^{\text{sus}} \subseteq \mathcal{I}$ | Suspicious members. E.g. $\mathcal{S}^{\text{sus}} = \{\text{hyoga}, \text{zeno}\}$ | `suspicious_members` |
+| $\mathcal{C}$ | $\mathcal{C} \subseteq \mathcal{I}$ | Craft members. E.g. $\mathcal{C} = \{\text{senku}, \text{kaseki}, \text{chrome}, \text{zeno}\}$ | `craft_members` |
+| $\mathcal{C}^{\text{sus}}$ | $\mathcal{C}^{\text{sus}} = \mathcal{C} \cap \mathcal{S}^{\text{sus}}$ | Suspicious craft members | `suspicious_craft_members` |
+| $\mathcal{C}^{\text{trusted}}$ | $\mathcal{C}^{\text{trusted}} = \mathcal{C} \setminus \mathcal{S}^{\text{sus}}$ | Trusted craft members | `trusted_craft_members` |
+| $\mathcal{B}$ | $\mathcal{B} \subseteq \mathcal{I}$ | Battle members. E.g. $\mathcal{B} = \{\text{tsukasa}, \text{kohaku}, \text{taiju}, \text{hyoga}\}$ | `battle_members` |
+| $\mathcal{B}^{\text{sus}}$ | $\mathcal{B}^{\text{sus}} = \mathcal{B} \cap \mathcal{S}^{\text{sus}}$ | Suspicious battle members | `suspicious_battle_members` |
+| $\mathcal{B}^{\text{trusted}}$ | $\mathcal{B}^{\text{trusted}} = \mathcal{B} \setminus \mathcal{S}^{\text{sus}}$ | Trusted battle members | `trusted_battle_members` |
+| $\mathcal{Q}$ | $\mathcal{Q} \subseteq \mathcal{I}$ | Quasi-battle members (adult males past adolescence). E.g. $\mathcal{Q} = \{\text{senku}, \text{zeno}, \text{kaseki}, \text{gen}, \text{chrome}, \text{ukyo}, \text{ryusui}, \text{max}, \text{carlos}\}$ | `quasi_battle_members` |
+| $\mathcal{Q}^{\text{sus}}$ | $\mathcal{Q}^{\text{sus}} = \mathcal{Q} \cap \mathcal{S}^{\text{sus}}$ | Suspicious quasi-battle members | `suspicious_quasi_battle_members` |
+| $\mathcal{Q}^{\text{trusted}}$ | $\mathcal{Q}^{\text{trusted}} = \mathcal{Q} \setminus \mathcal{S}^{\text{sus}}$ | Trusted quasi-battle members | `trusted_quasi_battle_members` |
 
-## 決定変数
+$\mathcal{S}^{\text{sus}}$, $\mathcal{C}$, $\mathcal{B}$, and $\mathcal{Q}$ are instance-defined. $\mathcal{C}^{\text{sus}}$, $\mathcal{C}^{\text{trusted}}$, $\mathcal{B}^{\text{sus}}$, $\mathcal{B}^{\text{trusted}}$, $\mathcal{Q}^{\text{sus}}$, and $\mathcal{Q}^{\text{trusted}}$ are derived from them.
 
-[common.md の決定変数](common.md#決定変数) に加え、dr_stone では次を用いる:
+## Decision variables
 
-| 変数 | 定義域 | 意味 | 参照 |
-|------|--------|------|------|
-| $\eta$ | $\mathbb{R}_{\geq 0}$ | 各奇数ステップの積載重量の共通上限（スカラー） | `load_ceiling` |
-| $\zeta$ | $\mathbb{R}_{\geq 0}$ | 全奇数ステップにおける積載重量の合計 | `total_load` |
-| $b_t^{\text{start}}$ | $\{0, 1\}$ | ステップ $t$ の出発側に疑いありバトルメンバーが 1 人以上いるとき 1 | `suspicious_battle_present_start` |
-| $b_t^{\text{goal}}$ | $\{0, 1\}$ | ステップ $t$ の到達側に疑いありバトルメンバーが 1 人以上いるとき 1 | `suspicious_battle_present_goal` |
-| $q_t^{\text{start}}$ | $\{0, 1\}$ | ステップ $t$ の出発側に疑いあり准バトルメンバーが 1 人以上いるとき 1 | `suspicious_quasi_battle_present_start` |
-| $q_t^{\text{goal}}$ | $\{0, 1\}$ | ステップ $t$ の到達側に疑いあり准バトルメンバーが 1 人以上いるとき 1 | `suspicious_quasi_battle_present_goal` |
+In addition to the [shared variables](common.md#decision-variables), dr_stone uses:
 
-## 目的関数
+| Variable | Domain | Meaning | Code |
+|----------|--------|---------|------|
+| $\eta$ | $\mathbb{R}_{\geq 0}$ | Shared load-weight ceiling across odd steps (scalar) | `load_ceiling` |
+| $\zeta$ | $\mathbb{R}_{\geq 0}$ | Sum of load weights over all odd steps | `total_load` |
+| $b_t^{\text{start}}$ | $\{0, 1\}$ | 1 if at least one suspicious battle member is on the start side at step $t$ | `suspicious_battle_present_start` |
+| $b_t^{\text{goal}}$ | $\{0, 1\}$ | 1 if at least one suspicious battle member is on the goal side at step $t$ | `suspicious_battle_present_goal` |
+| $q_t^{\text{start}}$ | $\{0, 1\}$ | 1 if at least one suspicious quasi-battle member is on the start side at step $t$ | `suspicious_quasi_battle_present_start` |
+| $q_t^{\text{goal}}$ | $\{0, 1\}$ | 1 if at least one suspicious quasi-battle member is on the goal side at step $t$ | `suspicious_quasi_battle_present_goal` |
 
-移動完了までの時間ステップを最小化しつつ、積載重量の上限ぎりぎり利用と無駄な往復移動を抑える:
+## Objective
+
+Minimize completion time while discouraging near-max loads and unnecessary round trips:
 
 $$
 \text{minimize} \quad
@@ -53,15 +55,15 @@ T^{\text{max}} - \sum_{t \in \mathcal{T}} f_t + 2
 + A \eta + B \zeta
 $$
 
-$A \eta$ は各移動で $W^{\text{max}}$ 付近まで載せることを抑え、$B \zeta$ は移動ごとの重量合計（往復の多さ）を抑える。
+$A \eta$ penalizes loading near $W^{\text{max}}$; $B \zeta$ penalizes total transit weight (proxy for extra trips).
 
-## 制約
+## Constraints
 
-[common.md の制約](common.md#制約) に加え、dr_stone では次を課す。
+In addition to the [shared constraints](common.md#constraints), dr_stone adds the following.
 
-### 重量定員
+### Weight capacity
 
-奇数ステップ $t \in \mathcal{T}^{\text{odd}}$ の積載重量は、共通の上限 $\eta$ より小さく、$\eta$ は $W^{\text{max}}$ より小さい:
+On each odd step $t \in \mathcal{T}^{\text{odd}}$, the load weight is at most the shared ceiling $\eta$, and $\eta$ is at most $W^{\text{max}}$:
 
 $$
 \sum_{i \in \mathcal{I}} W_i \, \delta_{i,t}^{\text{transit}} \leq \eta
@@ -74,18 +76,18 @@ $$
 \tag{C6-2}
 $$
 
-全奇数ステップの積載重量合計を $\zeta$ で表す:
+Total load weight over all odd steps is $\zeta$:
 
 $$
 \zeta = \sum_{t \in \mathcal{T}^{\text{odd}}} \sum_{i \in \mathcal{I}} W_i \, \delta_{i,t}^{\text{transit}}
 \tag{C6-3}
 $$
 
-[common.md の人数定員](common.md#人数定員)（C5-1）と併用する。
+Used together with the [shared passenger capacity](common.md#passenger-capacity) (C5-1).
 
-### 移動中の疑いありメンバーの監視
+### Escorting suspicious members in transit
 
-移動ステップ $t \in \mathcal{T}^{\text{odd}}$ について、移動中の疑いありメンバー数は疑いなしバトルメンバー数を超えない:
+On transit steps $t \in \mathcal{T}^{\text{odd}}$, the number of suspicious members in transit does not exceed the number of trusted battle members in transit:
 
 $$
 \sum_{i \in \mathcal{S}^{\text{sus}}} \delta_{i,t}^{\text{transit}}
@@ -94,14 +96,14 @@ $$
 \tag{C8-1}
 $$
 
-### 疑いありバトルメンバーの抑制
+### Suppressing suspicious battle members
 
-出発側・到達側それぞれについて、疑いありバトルメンバーが 1 人以上いるときのみ、疑いなしバトルメンバー数は疑いありバトルメンバー数より少なくとも 1 人多い必要がある。
+On the start and goal sides, only when at least one suspicious battle member is present must trusted battle members strictly outnumber them by at least one.
 
-まず、出発側・到達側の疑いありバトルメンバー存在フラグ $b_t^{\text{start}}$, $b_t^{\text{goal}}$ を定義する。  
-$|\mathcal{B}^{\text{sus}}|$ は疑いありバトルメンバー数とする。
+First define presence flags $b_t^{\text{start}}$, $b_t^{\text{goal}}$.  
+$|\mathcal{B}^{\text{sus}}|$ is the number of suspicious battle members.
 
-出発側及び到達側では、疑いありバトルメンバーが 1 人以上いることとフラグが 1 であることは必要十分である:
+On each side, the flag is 1 if and only if at least one suspicious battle member is present:
 
 $$
 b_t^{\text{start}} = 1
@@ -118,7 +120,7 @@ b_t^{\text{goal}} = 1
 \quad (\forall t \in \mathcal{T})
 $$
 
-線形計画では次のように記述する:
+In linear form:
 
 $$
 \sum_{i \in \mathcal{B}^{\text{sus}}} \delta_{i,t}^{\text{start}}
@@ -148,9 +150,9 @@ $$
 \tag{C9-4}
 $$
 
-C9-1, C9-2 により $b_t^{\text{start}} = 0$ のとき疑いありバトルメンバーは出発側にいない。C9-3, C9-4 も到達側で同様である。
+By C9-1 and C9-2, $b_t^{\text{start}} = 0$ implies no suspicious battle member is on the start side. C9-3 and C9-4 are analogous for the goal side.
 
-フラグが 1 のとき、元の抑制制約が成り立つ:
+When the flag is 1, the suppression constraint holds:
 
 $$
 b_t^{\text{start}} = 1
@@ -168,7 +170,7 @@ b_t^{\text{goal}} = 1
 \quad (\forall t \in \mathcal{T})
 $$
 
-線形計画では次のように記述する（$M$ は十分大きい定数。実装では $|\mathcal{I}|$ を用いる）:
+In linear form ($M$ is a sufficiently large constant; the implementation uses $|\mathcal{I}|$):
 
 $$
 \sum_{i \in \mathcal{B}^{\text{sus}}} \delta_{i,t}^{\text{start}} + 1
@@ -186,14 +188,14 @@ $$
 \tag{C9-6}
 $$
 
-### 疑いあり准バトルメンバーの抑制
+### Suppressing suspicious quasi-battle members
 
-出発側・到達側それぞれについて、疑いあり准バトルメンバーが 1 人以上いるときのみ、疑いなし准バトルメンバー数は疑いあり准バトルメンバー数より少なくとも 3 人多い必要がある。
+On the start and goal sides, only when at least one suspicious quasi-battle member is present must trusted quasi-battle members outnumber them by at least three.
 
-まず、出発側・到達側の疑いあり准バトルメンバー存在フラグ $q_t^{\text{start}}$, $q_t^{\text{goal}}$ を定義する。  
-$|\mathcal{Q}^{\text{sus}}|$ は疑いあり准バトルメンバー数とする。
+First define presence flags $q_t^{\text{start}}$, $q_t^{\text{goal}}$.  
+$|\mathcal{Q}^{\text{sus}}|$ is the number of suspicious quasi-battle members.
 
-出発側及び到達側では、疑いあり准バトルメンバーが 1 人以上いることとフラグが 1 であることは必要十分である:
+On each side, the flag is 1 if and only if at least one suspicious quasi-battle member is present:
 
 $$
 q_t^{\text{start}} = 1
@@ -210,7 +212,7 @@ q_t^{\text{goal}} = 1
 \quad (\forall t \in \mathcal{T})
 $$
 
-線形計画では次のように記述する:
+In linear form:
 
 $$
 \sum_{i \in \mathcal{Q}^{\text{sus}}} \delta_{i,t}^{\text{start}}
@@ -240,9 +242,9 @@ $$
 \tag{C10-4}
 $$
 
-C10-1, C10-2 により $q_t^{\text{start}} = 0$ のとき疑いあり准バトルメンバーは出発側にいない。C10-3, C10-4 も到達側で同様である。
+By C10-1 and C10-2, $q_t^{\text{start}} = 0$ implies no suspicious quasi-battle member is on the start side. C10-3 and C10-4 are analogous for the goal side.
 
-フラグが 1 のとき、元の抑制制約が成り立つ:
+When the flag is 1, the suppression constraint holds:
 
 $$
 q_t^{\text{start}} = 1
@@ -260,7 +262,7 @@ q_t^{\text{goal}} = 1
 \quad (\forall t \in \mathcal{T})
 $$
 
-線形計画では次のように記述する（$M$ は十分大きい定数。実装では $|\mathcal{I}|$ を用いる）:
+In linear form ($M$ is a sufficiently large constant; the implementation uses $|\mathcal{I}|$):
 
 $$
 \sum_{i \in \mathcal{Q}^{\text{sus}}} \delta_{i,t}^{\text{start}} + 3
@@ -278,13 +280,13 @@ $$
 \tag{C10-6}
 $$
 
-### 最終移動の構成
+### Final-move composition
 
-[README の最終移動ルール](../README.md#dr_stone) より、全員が到達側にいる状態の直前ステップで移動中のメンバーには、疑いなしクラフトメンバーと疑いなしバトルメンバーが各 1 人以上必要である。
+Per the [README final-move rule](../README.md#dr_stone), the transit party on the step immediately before everyone is on the goal side must include at least one trusted craft member and at least one trusted battle member.
 
-フィニッシュは [common.md のフィニッシュフラグ](common.md#フィニッシュフラグ)（C4）により単調に立ち上がる。したがって、初めて $f_t = 1$ となるステップ $t$ では $f_t - f_{t-1} = 1$ であり、それ以外では $0$ である（$t \in \{1, 2, \ldots, T^{\text{max}}\}$）。その $t$ の直前ステップ $t-1$ が最終移動である。
+Finish rises monotonically via the [shared finish flag](common.md#finish-flag) (C4). Thus the first step $t$ with $f_t = 1$ has $f_t - f_{t-1} = 1$, and otherwise the difference is $0$ ($t \in \{1, 2, \ldots, T^{\text{max}}\}$). That preceding step $t-1$ is the final move.
 
-論理形:
+Logical form:
 
 $$
 f_t - f_{t-1} = 1
@@ -300,7 +302,7 @@ f_t - f_{t-1} = 1
 \quad (\forall t \in \{1, 2, \ldots, T^{\text{max}}\})
 $$
 
-右辺を $f_t - f_{t-1}$ に置き換えると、含意は次の線形不等式と等価である（$f_t = f_{t-1}$ のときは自明、$f_t - f_{t-1} = 1$ のときだけ人数下限が効く）:
+Replacing the right-hand side with $f_t - f_{t-1}$ yields equivalent linear inequalities (vacuous when $f_t = f_{t-1}$; the headcount lower bound binds only when $f_t - f_{t-1} = 1$):
 
 $$
 \sum_{i \in \mathcal{C}^{\text{trusted}}} \delta_{i,t-1}^{\text{transit}}
@@ -316,7 +318,7 @@ $$
 \tag{C11-2}
 $$
 
-補足:
+Notes:
 
-- 初回フィニッシュは偶数ステップにしか起きない（奇数ステップでは移動中の対象が到達側にいないため）。そのとき $t-1$ は奇数の移動ステップである。
-- $f_0 = 1$（初期から全員到達側）のときは差分が常に $0$ となり、本制約は無効化される。
+- The first finish can only occur on an even step (on odd steps someone in transit is not yet on the goal side). Then $t-1$ is an odd transit step.
+- If $f_0 = 1$ (everyone already on the goal side initially), the difference is always $0$ and these constraints are inactive.

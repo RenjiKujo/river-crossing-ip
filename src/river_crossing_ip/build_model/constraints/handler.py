@@ -1,4 +1,4 @@
-"""puzzle_type ごとの制約・目的関数ディスパッチ。"""
+"""Dispatch of constraints and objective functions per puzzle_type."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ TYPE_HANDLERS: dict[str, tuple[ConstraintHandler, ObjectiveHandler]] = {
 
 
 def list_puzzle_types() -> tuple[str, ...]:
-    """登録済み puzzle_type 一覧を返す。"""
+    """Return the list of registered puzzle_types."""
     return tuple(sorted(TYPE_HANDLERS))
 
 
@@ -36,7 +36,7 @@ def add_type_constraints(
     spec: PuzzleSpec,
     indices: ProblemIndices,
 ) -> None:
-    """puzzle_type 固有の制約を追加する。"""
+    """Add constraints specific to the puzzle_type."""
     handler, _ = _get_handlers(spec.puzzle_type)
     handler(model, spec, indices)
 
@@ -46,13 +46,13 @@ def set_type_objective(
     spec: PuzzleSpec,
     indices: ProblemIndices,
 ) -> None:
-    """puzzle_type 固有の目的関数を設定する。"""
+    """Set the objective function specific to the puzzle_type."""
     _, handler = _get_handlers(spec.puzzle_type)
     handler(model, spec, indices)
 
 
 def _get_handlers(puzzle_type: str) -> tuple[ConstraintHandler, ObjectiveHandler]:
-    """puzzle_type に対応するハンドラを返す。"""
+    """Return the handler corresponding to the puzzle_type."""
     try:
         return TYPE_HANDLERS[puzzle_type]
     except KeyError as exc:

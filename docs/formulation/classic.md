@@ -1,48 +1,50 @@
-# 川渡りパズル定式化（classic）
+# River-crossing formulation (classic)
 
-`puzzle_type: classic` 向けの追加定式化。共通骨格は [common.md](common.md)、ルールの説明は [../README.md](../README.md#classic) を参照。
+**Languages:** [English](classic.md) | [日本語](classic.ja.md)
 
-インデックス・決定変数は [common.md](common.md) に従う。以下は classic で追加するインデックス・パラメータ・集合・目的関数・制約を記す。
+Extra formulation for `puzzle_type: classic`. Shared skeleton: [common.md](common.md). Rule narrative: [../README.md](../README.md#classic).
 
-## インデックス
+Indices and decision variables follow [common.md](common.md). Below are classic-only indices, parameters, sets, objective, and constraints.
 
-| 記号 | 定義域 | 説明 | 単位 | 参照 |
-|------|--------|------|------|------|
-| $k$ | $\mathcal{K}$ | 遺恨ルールのインデックス | — | `grudge_rule` |
+## Indices
 
-## パラメータ
+| Symbol | Domain | Description | Unit | Code |
+|--------|--------|-------------|------|------|
+| $k$ | $\mathcal{K}$ | Grudge-rule index | — | `grudge_rule` |
 
-| 記号 | 定義域 | 説明 | 参照 |
-|------|--------|------|------|
-| $K$ | $\mathbb{N}_0$ | 遺恨ルールの数 | `NUM_GRUDGE_RULES` |
+## Parameters
 
-## 集合
+| Symbol | Domain | Description | Code |
+|--------|--------|-------------|------|
+| $K$ | $\mathbb{N}_0$ | Number of grudge rules | `NUM_GRUDGE_RULES` |
 
-| 記号 | 全要素 | 説明 | 参照 |
-|------|------|------|------|
-| $\mathcal{K}$ | $\{1, 2, \ldots, K\}$ | 遺恨ルールのインデックス集合 | `grudge_rule_indices` |
-| $\mathcal{H}_k$ | $\mathcal{H}_k \subseteq \mathcal{I}$（$k \in \mathcal{K}$） | 遺恨のある組み合わせ。例: $\mathcal{H}_1 = \{\text{wolf}, \text{goat}\}$，$\mathcal{H}_2 = \{\text{goat}, \text{cabbage}\}$ | `grudge_members[k]` |
-| $\mathcal{G}_k$ | $\mathcal{G}_k \subseteq \mathcal{I}$（$k \in \mathcal{K}$） | 遺恨組 $\mathcal{H}_k$ のメンバーが同じ地点にいるとき、その地点にいなければならない仲裁対象の集合。例: $\mathcal{G}_1 = \mathcal{G}_2 = \{\text{farmer}\}$ | `grudge_guardians[k]` |
-| $\mathcal{P}$ | $\mathcal{P} \subseteq \mathcal{I}$ | 輸送手段を操縦できる対象の集合。例: $\mathcal{P} = \{\text{farmer}\}$ | `pilots` |
+## Sets
 
-ルール $k \in \mathcal{K}$ ごとに仲裁対象集合 $\mathcal{G}_k$ が与えられる。$\mathcal{P}$ と $\mathcal{G}_k$ は一般に異なる集合であり、同一の対象が両方に含まれることもある。
+| Symbol | Elements | Description | Code |
+|--------|----------|-------------|------|
+| $\mathcal{K}$ | $\{1, 2, \ldots, K\}$ | Index set of grudge rules | `grudge_rule_indices` |
+| $\mathcal{H}_k$ | $\mathcal{H}_k \subseteq \mathcal{I}$ ($k \in \mathcal{K}$) | Forbidden co-presence set. E.g. $\mathcal{H}_1 = \{\text{wolf}, \text{goat}\}$, $\mathcal{H}_2 = \{\text{goat}, \text{cabbage}\}$ | `grudge_members[k]` |
+| $\mathcal{G}_k$ | $\mathcal{G}_k \subseteq \mathcal{I}$ ($k \in \mathcal{K}$) | Guardians who must be present when $\mathcal{H}_k$ shares a location. E.g. $\mathcal{G}_1 = \mathcal{G}_2 = \{\text{farmer}\}$ | `grudge_guardians[k]` |
+| $\mathcal{P}$ | $\mathcal{P} \subseteq \mathcal{I}$ | Items that can operate the vehicle. E.g. $\mathcal{P} = \{\text{farmer}\}$ | `pilots` |
 
-## 目的関数
+Each rule $k \in \mathcal{K}$ has its own guardian set $\mathcal{G}_k$. $\mathcal{P}$ and $\mathcal{G}_k$ are distinct sets in general; the same item may belong to both.
 
-移動完了までの時間ステップを最小化する:
+## Objective
+
+Minimize time steps until completion:
 
 $$
 \text{minimize} \quad T^{\text{max}} - \sum_{t \in \mathcal{T}} f_t + 2
 $$
 
-## 制約
+## Constraints
 
-[common.md の制約](common.md#制約) に加え、classic では次を課す。
+In addition to the [shared constraints](common.md#constraints), classic adds the following.
 
-### 遺恨組の仲裁
+### Guardians for grudge sets
 
-各 $k \in \mathcal{K}$ について、$\mathcal{H}_k$ のメンバーが同じ地点にいるときは、$\mathcal{G}_k$ の誰か 1 人がその地点にいなければならない。  
-地点は出発側・到達側・移動中のいずれも対象とし、各ステップ $t \in \mathcal{T}$ について次が成り立つ:
+For each $k \in \mathcal{K}$, when every member of $\mathcal{H}_k$ shares a location, at least one member of $\mathcal{G}_k$ must be at that location.  
+This applies to start side, goal side, and transit, for every step $t \in \mathcal{T}$:
 
 $$
 \sum_{i \in \mathcal{H}_k} \delta_{i,t}^{\text{start}} = |\mathcal{H}_k|
@@ -62,7 +64,7 @@ $$
 \sum_{g \in \mathcal{G}_k} \delta_{g,t}^{\text{transit}} \geq 1
 $$
 
-線形計画では次のように記述する:
+In linear form:
 
 $$
 \sum_{i \in \mathcal{H}_k} \delta_{i,t}^{\text{start}} - |\mathcal{H}_k| + 1
@@ -85,11 +87,11 @@ $$
 \tag{C6-3}
 $$
 
-$|\mathcal{H}_k| = 2$ のときは、遺恨のある 2 対象が同じ地点にいる場合に仲裁対象が必要になる、と読める。
+When $|\mathcal{H}_k| = 2$, this reads as: if the two grudging items share a location, a guardian is required.
 
-### 操船者
+### Pilots
 
-奇数ステップ（移動中）では、$\mathcal{P}$ の誰か 1 人が移動中にいなければならない:
+On odd steps (in transit), at least one pilot from $\mathcal{P}$ must be in transit:
 
 $$
 \sum_{p \in \mathcal{P}} \delta_{p,t}^{\text{transit}} \geq 1

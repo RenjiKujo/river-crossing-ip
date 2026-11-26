@@ -1,4 +1,4 @@
-"""classic 向け制約・目的関数。"""
+"""Constraints and objective function for classic."""
 
 from __future__ import annotations
 
@@ -13,12 +13,12 @@ def add_classic_constraints(
     spec: PuzzleSpec,
     indices: ProblemIndices,
 ) -> None:
-    """classic 固有の制約 C6〜C7 を追加する。
+    """Add classic-specific constraints C6 to C7.
 
     Args:
-      model: Pyomo モデル。
-      spec: 問題定義。
-      indices: インデックス。
+      model: Pyomo model.
+      spec: Problem definition.
+      indices: Indices.
     """
     if not isinstance(spec, ClassicSpec):
         raise TypeError("spec must be ClassicSpec")
@@ -32,14 +32,14 @@ def set_classic_objective(
     spec: PuzzleSpec,
     indices: ProblemIndices,
 ) -> None:
-    """classic の目的関数を設定する。
+    """Set the objective function for classic.
 
     minimize T^max - sum(f_t) + 2
 
     Args:
-      model: Pyomo モデル。
-      spec: 問題定義。
-      indices: インデックス。
+      model: Pyomo model.
+      spec: Problem definition.
+      indices: Indices.
     """
     model.objective = Objective(
         expr=indices.max_time_step - sum(model.finish_flag[t] for t in model.T) + 2,
@@ -48,7 +48,7 @@ def set_classic_objective(
 
 
 def _add_c6_grudge_rules(model: ConcreteModel, spec: ClassicSpec) -> None:
-    """C6-1〜C6-3: 遺恨組の仲裁。"""
+    """C6-1 to C6-3: Mediation of grudge pairs."""
 
     for rule_index, rule in enumerate(spec.forbidden_co_presence):
         members = tuple(rule.members)
@@ -109,7 +109,7 @@ def _add_c6_grudge_rules(model: ConcreteModel, spec: ClassicSpec) -> None:
 
 
 def _add_c7_pilots(model: ConcreteModel, spec: ClassicSpec) -> None:
-    """C7-1: 操船者。"""
+    """C7-1: Boat operator."""
 
     pilots = tuple(spec.pilots)
 

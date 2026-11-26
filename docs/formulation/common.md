@@ -1,60 +1,62 @@
-# 川渡りパズル定式化（共通項）
+# River-crossing formulation (shared)
 
-`puzzle_type` に依存しない整数計画モデルの骨格。ルールの説明は [../README.md](../README.md#問題設定) を参照。
+**Languages:** [English](common.md) | [日本語](common.ja.md)
 
-## インデックス
+Integer-programming skeleton independent of `puzzle_type`. For the rule narrative, see [../README.md](../README.md#problem-setup).
 
-| 記号 | 定義域 | 説明 | 単位 | 参照 |
-|------|--------|------|------|------|
-| $i$ | $\mathcal{I}$ | 対象のインデックス | — | `item` |
-| $t$ | $\mathcal{T}$ | 時間ステップ | ステップ | `time_step` |
+## Indices
 
-## パラメータ
+| Symbol | Domain | Description | Unit | Code |
+|--------|--------|-------------|------|------|
+| $i$ | $\mathcal{I}$ | Item index | — | `item` |
+| $t$ | $\mathcal{T}$ | Time step | step | `time_step` |
 
-| 記号 | 定義域 | 説明 | 参照 |
-|------|--------|------|------|
-| $T^{\text{max}}$ | $\mathbb{N}$ | 最大時間ステップ | `MAX_TIME_STEP` |
-| $T^{\text{buffer}}$ | $\mathbb{N}_0$ | タイムステップに対するバッファー | `BUFFER_TIME` |
-| $C$ | $\mathbb{N}$ | 最大積載人数 | `MAX_CAPACITY` |
+## Parameters
 
-$T^{\text{max}}$ は次の式で与える。
+| Symbol | Domain | Description | Code |
+|--------|--------|-------------|------|
+| $T^{\text{max}}$ | $\mathbb{N}$ | Maximum time step | `MAX_TIME_STEP` |
+| $T^{\text{buffer}}$ | $\mathbb{N}_0$ | Buffer on the time horizon | `BUFFER_TIME` |
+| $C$ | $\mathbb{N}$ | Maximum passenger capacity | `MAX_CAPACITY` |
+
+$T^{\text{max}}$ is given by:
 
 $$
 T^{\text{max}} = 4 \left( \left\lceil \frac{|\mathcal{I}|}{C} \right\rceil + T^{\text{buffer}} \right) + 2
 $$
 
 
-## 集合
+## Sets
 
-| 記号 | 全要素 | 説明 | 参照 |
-|------|------|------|------|
-| $\mathcal{I}$ | 問題による | 移動対象の集合 | `items` |
-| $\mathcal{I}_0^{\text{goal}}$ | $\mathcal{I}_0^{\text{goal}} \subseteq \mathcal{I}$（問題による） | ステップ0から到達側にいる対象の集合 | `initial_far_side_items` |
-| $\mathcal{T}$ | $\{0, 1, \ldots, T^{\text{max}}\}$ | 時間ステップの集合 | `time_steps` |
-| $\mathcal{T}^{\text{even}}$ | $\{0, 2, 4, \ldots, T^{\text{max}}\}$ | 偶数ステップ（ステップ0は初期配置、それ以降は乗り降り） | `even_time_steps` |
-| $\mathcal{T}^{\text{odd}}$ | $\{1, 3, 5, \ldots, (T^{\text{max}}-1)\}$ | 奇数ステップ（移動） | `odd_time_steps` |
-| $\mathcal{T}^{4n+1}$ | $\{1, 5, 9, \ldots, (T^{\text{max}}-1)\}$ | 4で割ったとき、余りが1のステップ（出発側から到達側への移動） | `time_steps_4n_plus_1` |
-| $\mathcal{T}^{4n+3}$ | $\{3, 7, 11, \ldots, (T^{\text{max}}-3)\}$ | 4で割ったとき、余りが3のステップ（到達側から出発側への移動） | `time_steps_4n_plus_3` |
+| Symbol | Elements | Description | Code |
+|--------|----------|-------------|------|
+| $\mathcal{I}$ | instance-dependent | Set of items to move | `items` |
+| $\mathcal{I}_0^{\text{goal}}$ | $\mathcal{I}_0^{\text{goal}} \subseteq \mathcal{I}$ (instance-dependent) | Items already on the goal side at step 0 | `initial_far_side_items` |
+| $\mathcal{T}$ | $\{0, 1, \ldots, T^{\text{max}}\}$ | Set of time steps | `time_steps` |
+| $\mathcal{T}^{\text{even}}$ | $\{0, 2, 4, \ldots, T^{\text{max}}\}$ | Even steps (step 0 is initial placement; later even steps are board/alight) | `even_time_steps` |
+| $\mathcal{T}^{\text{odd}}$ | $\{1, 3, 5, \ldots, (T^{\text{max}}-1)\}$ | Odd steps (transit) | `odd_time_steps` |
+| $\mathcal{T}^{4n+1}$ | $\{1, 5, 9, \ldots, (T^{\text{max}}-1)\}$ | Steps congruent to 1 mod 4 (start → goal transit) | `time_steps_4n_plus_1` |
+| $\mathcal{T}^{4n+3}$ | $\{3, 7, 11, \ldots, (T^{\text{max}}-3)\}$ | Steps congruent to 3 mod 4 (goal → start transit) | `time_steps_4n_plus_3` |
 
 
-## 決定変数
+## Decision variables
 
-| 変数 | 定義域 | 意味 | 参照 |
-|------|--------|------|------|
-| $\delta_{i,t}^{\text{start}}$ | $\{0, 1\}$ | ステップ $t$ において対象 $i$ が出発側にいるとき 1 | `delta_start` |
-| $\delta_{i,t}^{\text{goal}}$ | $\{0, 1\}$ | ステップ $t$ において対象 $i$ が到達側にいるとき 1 | `delta_goal` |
-| $\delta_{i,t}^{\text{transit}}$ | $\{0, 1\}$ | ステップ $t$ において対象 $i$ が移動中のとき 1 | `delta_transit` |
-| $f_t$ | $\{0, 1\}$ | ステップ $t$ において、すべての対象が到達側にいるとき 1 | `finish_flag` |
+| Variable | Domain | Meaning | Code |
+|----------|--------|---------|------|
+| $\delta_{i,t}^{\text{start}}$ | $\{0, 1\}$ | 1 if item $i$ is on the start side at step $t$ | `delta_start` |
+| $\delta_{i,t}^{\text{goal}}$ | $\{0, 1\}$ | 1 if item $i$ is on the goal side at step $t$ | `delta_goal` |
+| $\delta_{i,t}^{\text{transit}}$ | $\{0, 1\}$ | 1 if item $i$ is in transit at step $t$ | `delta_transit` |
+| $f_t$ | $\{0, 1\}$ | 1 if every item is on the goal side at step $t$ | `finish_flag` |
 
-目的関数は `puzzle_type` ごとに [classic.md](classic.md) または [dr_stone.md](dr_stone.md) を参照。
+For the objective, see [classic.md](classic.md) or [dr_stone.md](dr_stone.md) by `puzzle_type`.
 
-## 制約
+## Constraints
 
-`puzzle_type` が `classic` でも `dr_stone` でも同じ制約は以下の通り。
+The following constraints apply for both `classic` and `dr_stone`.
 
-### 位置の一意性
+### Location uniqueness
 
-すべての対象は、各タイムステップにおいて、どこか1箇所に存在する:
+Every item occupies exactly one location at each time step:
 
 $$
 \delta_{i,t}^{\text{start}} + \delta_{i,t}^{\text{goal}} + \delta_{i,t}^{\text{transit}} = 1
@@ -62,9 +64,9 @@ $$
 \tag{C1-1}
 $$
 
-### 状態遷移
+### State transitions
 
-偶数ステップではすべての対象は移動中ではない:
+On even steps, no item is in transit:
 
 $$
 \delta_{i,t}^{\text{transit}} = 0
@@ -72,7 +74,7 @@ $$
 \tag{C2-1}
 $$
 
-$t \in \mathcal{T}^{4n+1}$（出発側→到達側の移動）では、対象 $i$ がステップ $t$ で移動中であることと、直前のステップ $t-1$ で出発側にいること・直後のステップ $t+1$ で到達側にいることは必要十分である:
+For $t \in \mathcal{T}^{4n+1}$ (start → goal transit), item $i$ being in transit at $t$ is equivalent to being on the start side at $t-1$ and on the goal side at $t+1$:
 
 $$
 \delta_{i,t}^{\text{transit}} = 1
@@ -81,7 +83,7 @@ $$
 \quad (\forall i \in \mathcal{I},\, \forall t \in \mathcal{T}^{4n+1})
 $$
 
-線形計画では次のように記述する:
+In linear form:
 
 $$
 \delta_{i,t}^{\text{transit}} \leq \delta_{i,t-1}^{\text{start}}
@@ -101,7 +103,7 @@ $$
 \tag{C2-4}
 $$
 
-$t \in \mathcal{T}^{4n+3}$（到達側→出発側の移動）では、対象 $i$ がステップ $t$ で移動中であることと、直前のステップ $t-1$ で到達側にいること・直後のステップ $t+1$ で出発側にいることは必要十分である:
+For $t \in \mathcal{T}^{4n+3}$ (goal → start transit), item $i$ being in transit at $t$ is equivalent to being on the goal side at $t-1$ and on the start side at $t+1$:
 
 $$
 \delta_{i,t}^{\text{transit}} = 1
@@ -110,7 +112,7 @@ $$
 \quad (\forall i \in \mathcal{I},\, \forall t \in \mathcal{T}^{4n+3})
 $$
 
-線形計画では次のように記述する:
+In linear form:
 
 $$
 \delta_{i,t}^{\text{transit}} \leq \delta_{i,t-1}^{\text{goal}}
@@ -130,7 +132,7 @@ $$
 \tag{C2-7}
 $$
 
-移動ステップ $t \in \mathcal{T}^{\text{odd}}$ において、対象 $i$ が移動中でないとき、出発側・到達側の位置はそれぞれ直前・現在・直後のステップ $t-1, t, t+1$ で変わらない:
+On a transit step $t \in \mathcal{T}^{\text{odd}}$, if item $i$ is not in transit, its start-side and goal-side locations are unchanged across $t-1$, $t$, and $t+1$:
 
 $$
 \delta_{i,t}^{\text{transit}} = 0
@@ -146,7 +148,7 @@ $$
 \quad (\forall i \in \mathcal{I},\, \forall t \in \mathcal{T}^{\text{odd}})
 $$
 
-線形計画では次のように記述する:
+In linear form:
 
 $$
 \delta_{i,t-1}^{\text{start}} - \delta_{i,t}^{\text{start}}
@@ -204,9 +206,9 @@ $$
 \tag{C2-15}
 $$
 
-### 初期状態
+### Initial state
 
-ステップ $t=0$ では、$\mathcal{I}_0^{\text{goal}}$ に含まれる対象だけが到達側にいる:
+At step $t=0$, only items in $\mathcal{I}_0^{\text{goal}}$ are on the goal side:
 
 $$
 \delta_{i,0}^{\text{goal}} = 1
@@ -220,15 +222,15 @@ $$
 \tag{C3-2}
 $$
 
-### フィニッシュフラグ
+### Finish flag
 
-ステップ $t$ において、$\delta_{i,t}^{\text{goal}}$ の合計が対象数 $|\mathcal{I}|$ と一致するときかつそのときに限って、フィニッシュフラグ $f_t$ が 1 になる:
+At step $t$, the finish flag $f_t$ is 1 if and only if the sum of $\delta_{i,t}^{\text{goal}}$ equals $|\mathcal{I}|$:
 
 $$
 \sum_{i \in \mathcal{I}} \delta_{i,t}^{\text{goal}} = |\mathcal{I}| \quad \Leftrightarrow \quad f_t = 1
 $$
 
-線形計画では次のように記述する:
+In linear form:
 
 $$
 f_t \leq \delta_{i,t}^{\text{goal}}
@@ -242,7 +244,7 @@ f_t \geq 1 - |\mathcal{I}| + \sum_{i \in \mathcal{I}} \delta_{i,t}^{\text{goal}}
 \tag{C4-2}
 $$
 
-フィニッシュ後も到達側に留まる:
+Once finished, stay finished (and remain on the goal side):
 
 $$
 f_t \leq f_{t+1}
@@ -250,18 +252,17 @@ f_t \leq f_{t+1}
 \tag{C4-3}
 $$
 
-ホライゾン内に必ず完了する:
+Completion must occur within the horizon:
 
 $$
 f_{T^{\text{max}}} = 1
 \tag{C4-4}
 $$
 
-### 人数定員
+### Passenger capacity
 
 $$
 \sum_{i \in \mathcal{I}} \delta_{i,t}^{\text{transit}} \leq C
 \quad (t \in \mathcal{T}^{\text{odd}})
 \tag{C5-1}
 $$
-

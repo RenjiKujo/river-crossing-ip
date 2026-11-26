@@ -1,4 +1,4 @@
-"""川渡りパズル整数計画ソルバー。"""
+"""Integer programming solver for river crossing puzzles."""
 
 from river_crossing_ip.build_model import (
     ModelBuilder,

@@ -1,4 +1,4 @@
-"""4ステップ周期のフェーズ判定とロープウェー状態。"""
+"""Phase detection for the 4-step cycle and ropeway state."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from enum import Enum
 
 
 class RopewayMotion(str, Enum):
-    """ロープウェーの移動方向または停車位置。"""
+    """Movement direction or stop position of the ropeway."""
 
     DOCKED_NEAR = "docked_near"
     DOCKED_FAR = "docked_far"
@@ -17,13 +17,13 @@ class RopewayMotion(str, Enum):
 
 @dataclass(frozen=True)
 class RopewayState:
-    """ロープウェー帯の表示状態。
+    """Display state of the ropeway band.
 
     Attributes:
-      motion: 移動・停車の種別。
-      motion_symbol: ケーブル上の方向記号（>> または <<）。
-      dock_label: 停車時の側ラベル（Near / Far）。移動中は None。
-      is_empty: 乗客なしの帰り移動かどうか。
+      motion: Type of motion or stop.
+      motion_symbol: Direction symbol on the cable (>> or <<).
+      dock_label: Side label when stopped (Near / Far). None while moving.
+      is_empty: Whether this is an empty return trip with no passengers.
     """
 
     motion: RopewayMotion
@@ -33,14 +33,14 @@ class RopewayState:
 
 
 def phase_label(step: int, transit_count: int) -> str:
-    """ヘッダー用フェーズラベルを返す。
+    """Return the phase label for the header.
 
     Args:
-      step: 時間ステップ。
-      transit_count: 移動中の人数。
+      step: Time step.
+      transit_count: Number of items in transit.
 
     Returns:
-      英語フェーズ文字列。
+      English phase string.
     """
     if step == 0:
         return "INITIAL"
@@ -58,14 +58,14 @@ def phase_label(step: int, transit_count: int) -> str:
 
 
 def ropeway_state(step: int, transit_items: tuple[str, ...]) -> RopewayState:
-    """ロープウェー帯の表示状態を返す。
+    """Return the display state of the ropeway band.
 
     Args:
-      step: 時間ステップ。
-      transit_items: 移動中の対象名（items 順でソート済み想定）。
+      step: Time step.
+      transit_items: Names of items in transit (assumed sorted in items order).
 
     Returns:
-      ロープウェー表示状態。
+      Ropeway display state.
     """
     if step == 0:
         return RopewayState(

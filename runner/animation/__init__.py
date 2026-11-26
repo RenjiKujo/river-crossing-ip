@@ -1,1 +1,1 @@
-"""求解結果アニメーション用モジュール。"""
+"""Modules for the solve result animation."""

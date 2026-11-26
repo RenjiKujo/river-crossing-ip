@@ -1,4 +1,4 @@
-"""川渡りパズル求解エンジン。"""
+"""Solver engine for river crossing puzzles."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from river_crossing_ip.types import PuzzleSpec
 
 
 class Engine:
-    """YAML 読込から求解までのパイプラインを実行する。"""
+    """Run the pipeline from YAML loading to solving."""
 
     def run(
         self,
@@ -19,14 +19,14 @@ class Engine:
         *,
         tee: bool = False,
     ) -> SolveResult:
-        """問題定義 YAML を読み込み、求解する。
+        """Load a problem definition YAML and solve it.
 
         Args:
-          spec_path: 問題定義 YAML のパス。
-          tee: ソルバーログを表示するか。
+          spec_path: Path to the problem definition YAML.
+          tee: Whether to show solver logs.
 
         Returns:
-          求解結果。
+          Solve result.
         """
         spec = load_spec(spec_path)
         return self.run_from_spec(spec, tee=tee)
@@ -37,19 +37,19 @@ class Engine:
         *,
         tee: bool = False,
     ) -> SolveResult:
-        """問題定義から求解する。
+        """Solve from a problem definition.
 
         Args:
-          spec: 問題定義。
-          tee: ソルバーログを表示するか。
+          spec: Problem definition.
+          tee: Whether to show solver logs.
 
         Returns:
-          求解結果。
+          Solve result.
         """
         model = build_model(spec)
         return solve_model(model, spec, tee=tee)
 
     @staticmethod
     def list_puzzle_types() -> tuple[str, ...]:
-        """登録済み puzzle_type 一覧を返す。"""
+        """Return the list of registered puzzle_types."""
         return list_puzzle_types()

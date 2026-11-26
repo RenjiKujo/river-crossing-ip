@@ -1,4 +1,4 @@
-"""dr_stone 向け制約・目的関数。"""
+"""Constraints and objective function for dr_stone."""
 
 from __future__ import annotations
 
@@ -21,12 +21,12 @@ def add_dr_stone_constraints(
     spec: PuzzleSpec,
     indices: ProblemIndices,
 ) -> None:
-    """dr_stone 固有の制約 C6, C8, C9, C10, C11 を追加する。
+    """Add dr_stone-specific constraints C6, C8, C9, C10, C11.
 
     Args:
-      model: Pyomo モデル。
-      spec: 問題定義。
-      indices: インデックス。
+      model: Pyomo model.
+      spec: Problem definition.
+      indices: Indices.
     """
     if not isinstance(spec, DrStoneSpec):
         raise TypeError("spec must be DrStoneSpec")
@@ -44,14 +44,14 @@ def set_dr_stone_objective(
     spec: PuzzleSpec,
     indices: ProblemIndices,
 ) -> None:
-    """dr_stone の目的関数を設定する。
+    """Set the objective function for dr_stone.
 
     minimize T^max - sum(f_t) + 2 + A*eta + B*zeta
 
     Args:
-      model: Pyomo モデル。
-      spec: 問題定義。
-      indices: インデックス。
+      model: Pyomo model.
+      spec: Problem definition.
+      indices: Indices.
     """
     if not isinstance(spec, DrStoneSpec):
         raise TypeError("spec must be DrStoneSpec")
@@ -68,13 +68,13 @@ def set_dr_stone_objective(
 
 
 def _add_dr_stone_variables(model: ConcreteModel) -> None:
-    """dr_stone 固有の決定変数を定義する。"""
+    """Define decision variables specific to dr_stone."""
     model.load_ceiling = Var(domain=NonNegativeReals)
     model.total_load = Var(domain=NonNegativeReals)
 
 
 def _add_c6_weight_capacity(model: ConcreteModel, spec: DrStoneSpec) -> None:
-    """C6-1〜C6-3: 重量定員。"""
+    """C6-1 to C6-3: Weight capacity."""
 
     def load_per_move(m: ConcreteModel, time_step: int) -> object:
         return (
@@ -103,7 +103,7 @@ def _add_c6_weight_capacity(model: ConcreteModel, spec: DrStoneSpec) -> None:
 
 
 def _add_c8_transit_monitoring(model: ConcreteModel, spec: DrStoneSpec) -> None:
-    """C8-1: 移動中の疑いありメンバーの監視。"""
+    """C8-1: Monitoring of suspicious members in transit."""
     suspicious = tuple(spec.suspicious_members)
     trusted_battle = tuple(spec.trusted_battle_members)
 
@@ -122,7 +122,7 @@ def _add_c9_suspicious_battle_suppression(
     model: ConcreteModel,
     spec: DrStoneSpec,
 ) -> None:
-    """C9-1〜C9-6: 疑いありバトルメンバーの抑制。"""
+    """C9-1 to C9-6: Suppression of suspicious battle members."""
     suspicious_battle = tuple(spec.suspicious_battle_members)
     if not suspicious_battle:
         return
@@ -200,7 +200,7 @@ def _add_c10_suspicious_quasi_battle_suppression(
     model: ConcreteModel,
     spec: DrStoneSpec,
 ) -> None:
-    """C10-1〜C10-6: 疑いあり准バトルメンバーの抑制。"""
+    """C10-1 to C10-6: Suppression of suspicious quasi-battle members."""
     suspicious_quasi_battle = tuple(spec.suspicious_quasi_battle_members)
     if not suspicious_quasi_battle:
         return
@@ -285,11 +285,11 @@ def _add_c11_final_move_composition(
     model: ConcreteModel,
     spec: DrStoneSpec,
 ) -> None:
-    """C11-1〜C11-2: 最終移動の構成。
+    """C11-1 to C11-2: Composition of the final move.
 
-    初めて finish_flag が 1 になるステップ t の直前ステップ t-1 の移動中に、
-    疑いなしクラフト・疑いなしバトルが各 1 人以上必要。
-    インデックスは t-1 側（T_finish_transition = {0,...,T^max-1}）で書く。
+    In the transit set of step t-1, immediately before the first step t where finish_flag becomes 1,
+    at least one non-suspicious craft member and one non-suspicious battle member are required.
+    Indices are written on the t-1 side (T_finish_transition = {0,...,T^max-1}).
     """
     trusted_craft = tuple(spec.trusted_craft_members)
     trusted_battle = tuple(spec.trusted_battle_members)

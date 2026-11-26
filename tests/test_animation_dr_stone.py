@@ -1,4 +1,4 @@
-"""dr_stone 向けアニメーション統合テスト。"""
+"""Animation integration test for dr_stone."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ DR_STONE_YAML = EXAMPLES_DIR / "dr_stone.yaml"
 
 @unittest.skipUnless(HAS_ANIMATE, "animate extras not installed")
 class DrStoneAnimationExportTest(unittest.TestCase):
-    """dr_stone.yaml の mp4 書き出し統合テスト。"""
+    """mp4 export integration test for dr_stone.yaml."""
 
     def test_dr_stone_example_exports_mp4(self) -> None:
         spec = load_spec(DR_STONE_YAML)

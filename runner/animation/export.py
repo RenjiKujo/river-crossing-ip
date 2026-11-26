@@ -1,4 +1,4 @@
-"""フレーム列の mp4 書き出し。"""
+"""Write a frame sequence to mp4."""
 
 from __future__ import annotations
 
@@ -23,8 +23,8 @@ FFMPEG_INSTALL_HINT = (
     "or system ffmpeg: sudo apt install ffmpeg"
 )
 
-# Shorts 向け: 平坦UIでも文字が潰れないよう高めの目標 bitrate を固定
-# （CRF のみだと静止画に近く ~200kbps まで落ち、YouTube 再エンコードで劣化する）
+# For Shorts: fix a high target bitrate so text stays legible even with a flat UI
+# (With CRF only, near-static frames drop to ~200kbps and degrade after YouTube re-encoding)
 FFMPEG_CODEC = "libx264"
 FFMPEG_BITRATE_KBPS = 8000
 FFMPEG_EXTRA_ARGS = (
@@ -42,7 +42,7 @@ FFMPEG_EXTRA_ARGS = (
 
 
 def _configure_ffmpeg() -> None:
-    """利用可能な ffmpeg 実行ファイルを matplotlib に設定する。"""
+    """Configure an available ffmpeg executable for matplotlib."""
     import matplotlib as mpl
 
     try:
@@ -71,20 +71,20 @@ def export_mp4(
     intro_seconds: float = 2.0,
     include_intro: bool = True,
 ) -> None:
-    """求解結果アニメーションを mp4 に書き出す。
+    """Write the solve result animation to an mp4 file.
 
     Args:
-      figure: matplotlib Figure。
-      axes: 描画 Axes。
-      result: 求解結果。
-      spec: 問題定義（classic / dr_stone）。
-      output_path: 出力 mp4 パス。
-      fps: フレームレート。
-      intro_seconds: イントロ表示秒数。
-      include_intro: イントロフレームを含めるか。
+      figure: matplotlib Figure.
+      axes: Drawing Axes.
+      result: Solve result.
+      spec: Problem definition (classic / dr_stone).
+      output_path: Output mp4 path.
+      fps: Frame rate.
+      intro_seconds: Intro display duration in seconds.
+      include_intro: Whether to include the intro frame.
 
     Raises:
-      RuntimeError: ffmpeg 未インストール等で書き出し失敗時。
+      RuntimeError: If export fails, e.g. because ffmpeg is not installed.
     """
     if result.finish_step is None or result.status != "optimal":
         raise ValueError("optimal result with finish_step is required")
@@ -127,7 +127,7 @@ def _grab_for_seconds(
     seconds: float,
     fps: int,
 ) -> None:
-    """指定秒数分 grab_frame する。"""
+    """Call grab_frame for the specified number of seconds."""
     frame_count = max(1, int(seconds * fps))
     for _ in range(frame_count):
         writer.grab_frame()
