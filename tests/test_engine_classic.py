@@ -1,4 +1,4 @@
-"""classic 向け Engine 統合テスト。"""
+"""Engine integration test for classic."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ EXAMPLES_DIR = Path(__file__).resolve().parents[1] / "examples"
 
 
 class ClassicEngineSolveTest(unittest.TestCase):
-    """classic.yaml の Engine.run 統合テスト。"""
+    """Engine.run integration test for classic.yaml."""
 
     def test_classic_example_is_optimal(self) -> None:
         result = Engine().run(EXAMPLES_DIR / "classic.yaml")

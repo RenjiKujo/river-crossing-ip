@@ -1,4 +1,4 @@
-"""ステップごとのエリア配置と移動検出。"""
+"""Per-step area placement and movement detection."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from river_crossing_ip.types import ClassicSpec, DrStoneSpec, PuzzleSpec
 
 
 class CardStyle(str, Enum):
-    """メンバーカードの枠・バッジ種別。"""
+    """Frame and badge type of a member card."""
 
     DEFAULT = "default"
     PILOT = "pilot"
@@ -21,14 +21,14 @@ class CardStyle(str, Enum):
 
 @dataclass(frozen=True)
 class StepLayout:
-    """1ステップ分の配置情報。
+    """Placement info for one step.
 
     Attributes:
-      near_items: 出発側（Near）にいる対象（items 順）。
-      far_items: 到達側（Far）にいる対象（items 順）。
-      transit_items: 移動中の対象（items 順）。
-      moved_items: 直前ステップから位置が変わった対象。
-      load_kg: 移動中の積載重量（kg）。classic または移動中0人のとき None。
+      near_items: Items on the start side (Near), in items order.
+      far_items: Items on the goal side (Far), in items order.
+      transit_items: Items in transit, in items order.
+      moved_items: Items whose position changed since the previous step.
+      load_kg: Load weight in transit (kg). None for classic or when no one is in transit.
     """
 
     near_items: tuple[str, ...]
@@ -39,25 +39,25 @@ class StepLayout:
 
 
 def display_name(item: str) -> str:
-    """YAML 内部名を Title Case 表示名に変換する。"""
+    """Convert an internal YAML name into a Title Case display name."""
     return item.title()
 
 
 def card_style_for_item(item: str, spec: PuzzleSpec) -> CardStyle:
-    """対象のカード枠・バッジ種別を返す。
+    """Return the card frame and badge type of an item.
 
-    classic: pilots に属する対象は PILOT。
+    classic: items in pilots are PILOT.
     dr_stone:
-      trusted battle（White）: battle_members かつ suspicious でない。
-      SUSP battle: 両方に属する（例: hyoga）。
-      SUSP only: suspicious のみ（例: zeno）。
+      trusted battle (White): in battle_members and not suspicious.
+      SUSP battle: belongs to both (e.g. hyoga).
+      SUSP only: suspicious only (e.g. zeno).
 
     Args:
-      item: 対象名。
-      spec: 問題定義。
+      item: Item name.
+      spec: Problem definition.
 
     Returns:
-      カードスタイル。
+      Card style.
     """
     if isinstance(spec, ClassicSpec):
         if item in spec.pilots:
@@ -80,7 +80,7 @@ def items_at_location(
     location: Location,
     items_order: tuple[str, ...],
 ) -> tuple[str, ...]:
-    """指定位置にいる対象を items 順で返す。"""
+    """Return the items at the given position in items order."""
     return tuple(item for item in items_order if positions.get(item) == location)
 
 
@@ -88,7 +88,7 @@ def detect_moved(
     previous: dict[str, Location] | None,
     current: dict[str, Location],
 ) -> frozenset[str]:
-    """直前ステップから位置が変わった対象を返す。"""
+    """Return the items whose position changed since the previous step."""
     if previous is None:
         return frozenset()
     return frozenset(
@@ -100,7 +100,7 @@ def compute_load_kg(
     transit_items: tuple[str, ...],
     item_weights: dict[str, float],
 ) -> int | None:
-    """移動中乗客の積載重量合計（kg）を返す。"""
+    """Return the total load weight (kg) of passengers in transit."""
     if not transit_items:
         return None
     return int(sum(item_weights[item] for item in transit_items))
@@ -111,15 +111,15 @@ def build_step_layout(
     positions: dict[int, dict[str, Location]],
     spec: PuzzleSpec,
 ) -> StepLayout:
-    """1ステップ分の配置情報を構築する。
+    """Build the placement info for one step.
 
     Args:
-      step: 時間ステップ。
-      positions: 全ステップの位置辞書。
-      spec: 問題定義。
+      step: Time step.
+      positions: Position dictionary for all steps.
+      spec: Problem definition.
 
     Returns:
-      配置情報。
+      Placement info.
     """
     current = positions[step]
     previous = positions.get(step - 1)
@@ -143,16 +143,16 @@ def step_duration(
     unchanged_seconds: float = 0.6,
     changed_seconds: float = 2.0,
 ) -> float:
-    """ステップの表示秒数を返す。
+    """Return the display duration of a step in seconds.
 
     Args:
-      step: 時間ステップ。
-      positions: 全ステップの位置辞書。
-      unchanged_seconds: 配置不変時の秒数。
-      changed_seconds: 配置変化時の秒数。
+      step: Time step.
+      positions: Position dictionary for all steps.
+      unchanged_seconds: Seconds when the placement is unchanged.
+      changed_seconds: Seconds when the placement changes.
 
     Returns:
-      表示秒数。
+      Display duration in seconds.
     """
     if step == 0:
         return changed_seconds

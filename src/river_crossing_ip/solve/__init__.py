@@ -1,4 +1,4 @@
-"""求解処理。"""
+"""Solve processing."""
 
 from river_crossing_ip.solve.result import SolveResult, SolverStatus
 from river_crossing_ip.solve.solver import solve_model

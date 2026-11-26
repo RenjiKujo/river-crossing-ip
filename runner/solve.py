@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""川渡りパズル求解 CLI。"""
+"""CLI for solving river crossing puzzles."""
 
 from __future__ import annotations
 
@@ -14,29 +14,29 @@ from display import display_result
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI エントリポイント。
+    """CLI entry point.
 
     Args:
-      argv: コマンドライン引数。
+      argv: Command-line arguments.
 
     Returns:
-      終了コード。
+      Exit code.
     """
     parser = argparse.ArgumentParser(description="River crossing puzzle solver")
     parser.add_argument(
         "--spec",
         type=Path,
-        help="問題定義 YAML のパス",
+        help="Path to the problem definition YAML",
     )
     parser.add_argument(
         "--list-types",
         action="store_true",
-        help="登録済み puzzle_type 一覧を表示",
+        help="List registered puzzle_types",
     )
     parser.add_argument(
         "--tee",
         action="store_true",
-        help="ソルバーログを表示",
+        help="Show solver logs",
     )
     args = parser.parse_args(argv)
 

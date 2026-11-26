@@ -1,4 +1,4 @@
-# classic 定式化の定形例（狼と羊とキャベツ）
+# Canonical classic instance (wolf, goat, cabbage)
 puzzle_type: classic
 
 items:
@@ -15,10 +15,10 @@ pilots:
 forbidden_co_presence:
   - members: [wolf, goat]
     guardians: [farmer]
-    description: 狼と羊が同じ地点にいるとき農夫が仲裁に必要
+    description: Farmer must mediate when wolf and goat share a location
   - members: [goat, cabbage]
     guardians: [farmer]
-    description: 羊とキャベツが同じ地点にいるとき農夫が仲裁に必要
+    description: Farmer must mediate when goat and cabbage share a location
 
 initial_far_side: []
 

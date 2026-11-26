@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""求解結果アニメーション mp4 生成 CLI。"""
+"""CLI that generates an mp4 animation of the solve result."""
 
 from __future__ import annotations
 
@@ -18,13 +18,13 @@ SUPPORTED_SPECS = (ClassicSpec, DrStoneSpec)
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI エントリポイント。
+    """CLI entry point.
 
     Args:
-      argv: コマンドライン引数。
+      argv: Command-line arguments.
 
     Returns:
-      終了コード。
+      Exit code.
     """
     parser = argparse.ArgumentParser(
         description=(
@@ -95,7 +95,7 @@ def _export_animation(
     include_intro: bool,
     tee: bool,
 ) -> int:
-    """求解して mp4 を書き出す。"""
+    """Solve and write an mp4 file."""
     try:
         result = Engine().run_from_spec(spec, tee=tee)
     except ValueError as exc:

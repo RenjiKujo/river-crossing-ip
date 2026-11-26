@@ -1,4 +1,4 @@
-"""共通制約（common.md）。"""
+"""Common constraints (common.md)."""
 
 from __future__ import annotations
 
@@ -13,12 +13,12 @@ def add_common_variables(
     spec: PuzzleSpec,
     indices: ProblemIndices,
 ) -> None:
-    """共通決定変数を定義する。
+    """Define the common decision variables.
 
     Args:
-      model: Pyomo モデル。
-      spec: 問題定義。
-      indices: インデックス。
+      model: Pyomo model.
+      spec: Problem definition.
+      indices: Indices.
     """
     model.spec = spec
     model.indices = indices
@@ -42,12 +42,12 @@ def add_common_constraints(
     spec: PuzzleSpec,
     indices: ProblemIndices,
 ) -> None:
-    """common.md の共通制約 C1〜C5 を追加する。
+    """Add the common constraints C1 to C5 from common.md.
 
     Args:
-      model: Pyomo モデル。
-      spec: 問題定義。
-      indices: インデックス。
+      model: Pyomo model.
+      spec: Problem definition.
+      indices: Indices.
     """
     _add_c1_location_uniqueness(model)
     _add_c2_state_transition(model)
@@ -57,7 +57,7 @@ def add_common_constraints(
 
 
 def _add_c1_location_uniqueness(model: ConcreteModel) -> None:
-    """C1-1: 各対象は各ステップでちょうど1地点に存在する。"""
+    """C1-1: Each item is at exactly one location at each step."""
 
     def rule(m: ConcreteModel, item: str, time_step: int) -> object:
         return (
@@ -71,7 +71,7 @@ def _add_c1_location_uniqueness(model: ConcreteModel) -> None:
 
 
 def _add_c2_state_transition(model: ConcreteModel) -> None:
-    """C2-1〜C2-15: 偶数・奇数ステップの状態遷移。"""
+    """C2-1 to C2-15: State transitions at even and odd steps."""
 
     def no_transit_on_even(m: ConcreteModel, item: str, time_step: int) -> object:
         return m.delta_transit[item, time_step] == 0
@@ -183,7 +183,7 @@ def _add_c2_state_transition(model: ConcreteModel) -> None:
 
 
 def _add_c3_initial_state(model: ConcreteModel, indices: ProblemIndices) -> None:
-    """C3-1〜C3-2: ステップ0の初期配置。"""
+    """C3-1 to C3-2: Initial placement at step 0."""
 
     def on_far_side(m: ConcreteModel, item: str) -> object:
         return m.delta_goal[item, 0] == 1
@@ -208,7 +208,7 @@ def _add_c3_initial_state(model: ConcreteModel, indices: ProblemIndices) -> None
 
 
 def _add_c4_finish_flag(model: ConcreteModel, indices: ProblemIndices) -> None:
-    """C4-1〜C4-4: フィニッシュフラグ。"""
+    """C4-1 to C4-4: Finish flag."""
 
     def finish_implies_all_goal(m: ConcreteModel, item: str, time_step: int) -> object:
         return m.finish_flag[time_step] <= m.delta_goal[item, time_step]
@@ -246,7 +246,7 @@ def _add_c4_finish_flag(model: ConcreteModel, indices: ProblemIndices) -> None:
 
 
 def _add_c5_capacity(model: ConcreteModel, indices: ProblemIndices) -> None:
-    """C5-1: 移動中の人数定員。"""
+    """C5-1: Capacity limit on the number of items in transit."""
 
     def capacity_rule(m: ConcreteModel, time_step: int) -> object:
         return sum(m.delta_transit[item, time_step] for item in m.I) <= indices.capacity

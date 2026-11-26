@@ -1,4 +1,4 @@
-"""問題定義の読み込み。"""
+"""Loading of problem definitions."""
 
 from river_crossing_ip.load_data.spec_loader import SpecLoadError, load_spec
 

@@ -1,4 +1,4 @@
-"""整数計画モデルの構築。"""
+"""Construction of the integer programming model."""
 
 from river_crossing_ip.build_model.builder import ModelBuilder, build_model
 from river_crossing_ip.build_model.constraints import list_puzzle_types

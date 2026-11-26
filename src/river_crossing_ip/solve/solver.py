@@ -1,4 +1,4 @@
-"""HiGHS による求解。"""
+"""Solving with HiGHS."""
 
 from __future__ import annotations
 
@@ -14,15 +14,15 @@ def solve_model(
     *,
     tee: bool = False,
 ) -> SolveResult:
-    """Pyomo モデルを HiGHS で求解する。
+    """Solve a Pyomo model with HiGHS.
 
     Args:
-      model: 求解対象モデル。
-      spec: 問題定義。
-      tee: ソルバーログを表示するか。
+      model: Model to solve.
+      spec: Problem definition.
+      tee: Whether to show solver logs.
 
     Returns:
-      求解結果。
+      Solve result.
     """
     solver = SolverFactory("appsi_highs")
     results = solver.solve(model, tee=tee, load_solutions=False)
@@ -39,7 +39,7 @@ def solve_model(
 
 
 def _empty_result(status: SolverStatus) -> SolveResult:
-    """失敗時の空結果を返す。"""
+    """Return an empty result on failure."""
     return SolveResult(
         status=status,
         objective_value=None,
@@ -49,7 +49,7 @@ def _empty_result(status: SolverStatus) -> SolveResult:
 
 
 def _build_optimal_result(model: ConcreteModel, spec: PuzzleSpec) -> SolveResult:
-    """最適解から SolveResult を構築する。"""
+    """Build a SolveResult from the optimal solution."""
     positions = _extract_positions(model, spec)
     finish_step = _extract_finish_step(model)
     objective_value = float(value(model.objective))
@@ -63,7 +63,7 @@ def _build_optimal_result(model: ConcreteModel, spec: PuzzleSpec) -> SolveResult
 
 
 def _extract_finish_step(model: ConcreteModel) -> int | None:
-    """最初に完了したステップを返す。"""
+    """Return the first step at which everyone has finished."""
     for time_step in sorted(model.T):
         if _binary_value(model.finish_flag[time_step]) == 1:
             return int(time_step)
@@ -74,7 +74,7 @@ def _extract_positions(
     model: ConcreteModel,
     spec: PuzzleSpec,
 ) -> dict[int, dict[str, Location]]:
-    """各ステップの配置を抽出する。"""
+    """Extract the placement at each step."""
     positions: dict[int, dict[str, Location]] = {}
     for time_step in model.T:
         step_positions: dict[str, Location] = {}
@@ -90,7 +90,7 @@ def _extract_positions(
 
 
 def _binary_value(var: object) -> int:
-    """バイナリ変数値を 0/1 に丸める。"""
+    """Round a binary variable value to 0/1."""
     numeric = value(var)
     if numeric is None:
         return 0

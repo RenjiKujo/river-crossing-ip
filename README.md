@@ -1,39 +1,41 @@
 # river-crossing-ip
 
-## 概要
+**Languages:** [English](README.md) | [日本語](README.ja.md)
 
-『ドクターストーン』の川渡りパズルを **整数計画法（MILP）** で解くデモ付き Python ライブラリです。  
-数理最適化・組合せ最適化・川渡りパズルに興味がある方向け。
+## Overview
 
-🎬 **解説動画（YouTube Shorts）**: [ドクターストーン川渡りパズルを整数計画法で解く](https://youtube.com/shorts/eGgKSlvQKQs)
+A demo-ready Python library that solves the *Dr. Stone* river-crossing puzzle with **mixed-integer linear programming (MILP)**.  
+Aimed at readers interested in mathematical optimization, combinatorial optimization, and river-crossing puzzles.
 
-| キーワード | |
-|-----------|---|
-| 対象作品 | ドクターストーン（Dr. Stone） |
-| 手法 | 整数計画法 / 数理最適化 / Pyomo / HiGHS |
-| 対応問題 | 古典（狼・羊・キャベツ）、ドクターストーン版 |
+🎬 **Explainer (YouTube Shorts):** [Solving the Dr. Stone river-crossing puzzle with integer programming](https://youtube.com/shorts/eGgKSlvQKQs)
+
+| Keywords | |
+|----------|---|
+| Source work | Dr. Stone |
+| Methods | Integer programming / mathematical optimization / Pyomo / HiGHS |
+| Puzzle types | Classic (wolf–goat–cabbage), Dr. Stone variant |
 
 ---
 
-川渡りパズルを **整数計画（IP）** で解く Python ライブラリです。  
-[Pyomo](https://pyomo.readthedocs.io/) でモデルを組み立て、[HiGHS](https://highs.dev/) で求解します。
+A Python library that solves river-crossing puzzles with **integer programming (IP)**.  
+Models are built with [Pyomo](https://pyomo.readthedocs.io/) and solved with [HiGHS](https://highs.dev/).
 
-古典問題（狼羊キャベツ）とドクターストーン版を、同じ骨格で扱えます。
+The classic wolf–goat–cabbage puzzle and the Dr. Stone variant share the same model skeleton.
 
-## 要件
+## Requirements
 
-- Python 3.10 以上
-- 依存: `pyomo`, `highspy`, `PyYAML`（`pip install -e .` で導入）
+- Python 3.10+
+- Dependencies: `pyomo`, `highspy`, `PyYAML` (installed via `pip install -e .`)
 
-## インストール
+## Installation
 
-### 使う場合（ライブラリとして組み込む）
+### As a library
 
 ```bash
 pip install "git+https://github.com/RenjiKujo/river-crossing-ip.git"
 ```
 
-### 開発する場合（clone して拡張・PR）
+### For development (clone and contribute)
 
 ```bash
 git clone https://github.com/RenjiKujo/river-crossing-ip.git
@@ -44,21 +46,21 @@ pip install -U pip
 pip install -e ".[dev]"
 ```
 
-## クイックスタート
+## Quick start
 
-古典問題（狼と羊とキャベツ）を解く:
+Solve the classic puzzle (wolf, goat, and cabbage):
 
 ```bash
 .venv/bin/python runner/solve.py --spec examples/classic.yaml
 ```
 
-ドクターストーン版:
+Dr. Stone variant:
 
 ```bash
 .venv/bin/python runner/solve.py --spec examples/dr_stone.yaml
 ```
 
-求解から YouTube Shorts 向け縦型 mp4（1080x1920）まで一括で行う場合（`classic` / `dr_stone`）。追加依存（`matplotlib`, `imageio-ffmpeg`）が必要です。`imageio-ffmpeg` に ffmpeg バイナリが同梱されます:
+Solve and export a vertical YouTube Shorts mp4 (1080x1920) in one shot (`classic` / `dr_stone`). Extra deps (`matplotlib`, `imageio-ffmpeg`) are required; `imageio-ffmpeg` ships an ffmpeg binary:
 
 ```bash
 pip install -e ".[animate]"
@@ -66,15 +68,15 @@ pip install -e ".[animate]"
 .venv/bin/python runner/animate.py --spec examples/dr_stone.yaml --output out/dr_stone_short.mp4
 ```
 
-`--output` 省略時は `out/{puzzle_type}_short.mp4`。`--no-intro` で冒頭タイトルカードを省略、`--intro-seconds 1.0` で表示秒数を変更できます。
+If `--output` is omitted, the path is `out/{puzzle_type}_short.mp4`. Use `--no-intro` to skip the title card, or `--intro-seconds 1.0` to change its duration.
 
-登録済みの問題タイプを確認:
+List registered puzzle types:
 
 ```bash
 .venv/bin/python runner/solve.py --list-types
 ```
 
-ソルバーログを表示する場合は `--tee` を付けます（`solve.py` / `animate.py` 共通）。
+Add `--tee` to show solver logs (`solve.py` / `animate.py`).
 
 ## Python API
 
@@ -83,74 +85,76 @@ from river_crossing_ip import Engine
 
 result = Engine().run("examples/classic.yaml")
 print(result.status)          # "optimal"
-print(result.finish_step)     # 全員が到達側にいる最初のステップ
-print(result.objective_value) # 目的関数値（最小ステップ数）
+print(result.finish_step)     # first step when everyone is on the goal side
+print(result.objective_value) # objective value (min steps, plus extras for some types)
 ```
 
-`load_spec` で YAML を読み込み、`build_model` / `solve_model` を個別に呼ぶこともできます。
+You can also call `load_spec` for YAML loading and `build_model` / `solve_model` separately.
 
-## 問題タイプ
+## Puzzle types
 
-| `puzzle_type` | 概要 | サンプル |
-|---------------|------|----------|
-| `classic` | 人数上限・操縦者・遺恨ルール（同地点に特定の組がいるとき仲裁者が必要） | [examples/classic.yaml](examples/classic.yaml) |
-| `dr_stone` | 重量制限・疑いありメンバー・クラフト/バトル役割など | [examples/dr_stone.yaml](examples/dr_stone.yaml) |
+| `puzzle_type` | Summary | Sample |
+|---------------|---------|--------|
+| `classic` | Capacity, pilots, grudge rules (a guardian is required when a forbidden pair shares a location) | [examples/classic.yaml](examples/classic.yaml) |
+| `dr_stone` | Weight limits, suspicious members, craft/battle roles, etc. | [examples/dr_stone.yaml](examples/dr_stone.yaml) |
 
-問題定義は YAML で記述します。新しい問題を作るときは上記サンプルをベースにしてください。
+Problem definitions are written in YAML. Start from the samples above when adding a new instance.
 
-## 処理の流れ
+## Pipeline
 
 ```text
 YAML (examples/*.yaml)
-  → load_spec()     問題定義の読み込み・検証
-  → build_model()   Pyomo モデル構築（共通制約 + タイプ別制約）
-  → solve_model()   HiGHS による求解
-  → SolveResult     ステップごとの配置・目的関数値
+  → load_spec()     load and validate the problem definition
+  → build_model()   build the Pyomo model (shared + type-specific constraints)
+  → solve_model()   solve with HiGHS
+  → SolveResult     per-step placement and objective value
 ```
 
-## プロジェクト構成
+## Project layout
 
 ```text
 src/river_crossing_ip/
-  engine.py                 # 読込〜求解のパイプライン
+  engine.py                 # load-to-solve pipeline
   types.py                  # PuzzleSpec, ClassicSpec, DrStoneSpec
-  load_data/spec_loader.py  # YAML 読み込み
+  load_data/spec_loader.py  # YAML loading
   build_model/
-    builder.py              # モデル構築
-    indices.py              # インデックス・ホライゾン計算
-    constraints/            # 共通・classic・dr_stone の制約と目的関数
+    builder.py              # model construction
+    indices.py              # indices and horizon
+    constraints/            # shared, classic, and dr_stone constraints / objectives
   solve/
-    solver.py               # HiGHS 求解
+    solver.py               # HiGHS solve
     result.py               # SolveResult
 runner/
   solve.py                  # CLI
-  display.py                # 結果の表示
-  animate.py                # 求解結果アニメ mp4 生成（classic / dr_stone）
-  animation/                # アニメ描画・書き出し
-examples/                   # 問題定義サンプル
-docs/                       # 問題設定・定式化メモ
-tests/                      # 統合テスト
+  display.py                # result printing
+  animate.py                # solve-result animation mp4 (classic / dr_stone)
+  animation/                # drawing and export
+examples/                   # sample problem definitions
+docs/                       # problem rules and formulation notes
+tests/                      # integration tests
 ```
 
-## ドキュメント
+## Documentation
 
-| ファイル | 内容 |
-|----------|------|
-| [docs/README.md](docs/README.md) | 問題設定の説明 |
-| [docs/formulation/common.md](docs/formulation/common.md) | 共通 IP 定式化 |
-| [docs/formulation/classic.md](docs/formulation/classic.md) | classic 向け追加ルール |
-| [docs/formulation/dr_stone.md](docs/formulation/dr_stone.md) | dr_stone 向け追加ルール |
+| File | Content |
+|------|---------|
+| [docs/README.md](docs/README.md) | Problem setup |
+| [docs/formulation/common.md](docs/formulation/common.md) | Shared IP formulation |
+| [docs/formulation/classic.md](docs/formulation/classic.md) | classic extras |
+| [docs/formulation/dr_stone.md](docs/formulation/dr_stone.md) | dr_stone extras |
 
-## テスト
+Japanese translations: [README.ja.md](README.ja.md), [docs/README.ja.md](docs/README.ja.md), and `docs/formulation/*.ja.md`.
+
+## Tests
 
 ```bash
 pytest -q
 ```
 
-`examples/classic.yaml` と `examples/dr_stone.yaml` が最適解に到達することを確認します。
+Confirms that `examples/classic.yaml` and `examples/dr_stone.yaml` reach optimal solutions.
 
-PR と `main` への push では、lint（ruff）・テスト（pytest）を GitHub Actions で検証しています（`.github/workflows/ci.yml`）。
+PRs and pushes to `main` run lint (ruff) and tests (pytest) via GitHub Actions (`.github/workflows/ci.yml`).
 
-## ライセンス
+## License
 
-MIT（[LICENSE](LICENSE)）
+MIT ([LICENSE](LICENSE))

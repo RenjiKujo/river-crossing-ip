@@ -1,4 +1,4 @@
-"""制約モジュールの公開 API。"""
+"""Public API of the constraint modules."""
 
 from river_crossing_ip.build_model.constraints.handler import (
     add_type_constraints,

@@ -1,49 +1,53 @@
-# 川渡りパズルに関する説明資料
+# River-crossing puzzle notes
 
-## 問題設定
+**Languages:** [English](README.md) | [日本語](README.ja.md)
 
-### 共通（すべての puzzle_type）
+## Problem setup
 
-**あるグループが、今いる地点から別の地点へ移動する際、移動時の人数制限などの制約のもとで安全かつ最小ステップで全員を渡し切るには、どのように移動すればよいか？**
+### Shared (all `puzzle_type`s)
 
-以上の問いを、出発側・到達側・移動中の3状態で対象を輸送する問題として表す。本リポジトリでは次のように具体化する。
+**Given capacity and safety constraints, how should a group move from one place to another so that everyone arrives safely in the fewest steps?**
 
-- 地点は出発側・到達側・移動中の3つ。
-- 1回の移動で同時に運べる対象数に上限がある。
-- ステップ0は初期配置とする。すべての対象が出発側にいるとは限らない。
-- ステップ1以降は「移動」と「乗り降り」が交互に続く。
-  - 奇数ステップ: 輸送手段が一方の地点から他方の地点へ移動する（乗員は移動中にいる）。
-  - 偶数ステップ: 乗り降りが発生する。
-- ゴールは、すべての対象が到達側にいる状態とする。
-- 目的は、移動完了までの時間ステップの最小化とする。
+We cast that question as transporting items across three states: start side, goal side, and in transit. This repository instantiates it as follows:
+
+- Locations are start side, goal side, and in transit.
+- There is a limit on how many items can move at once.
+- Step 0 is the initial placement. Not everyone need start on the start side.
+- From step 1 onward, “move” and “board/alight” alternate.
+  - Odd steps: the vehicle moves from one side to the other (occupants are in transit).
+  - Even steps: boarding and alighting occur.
+- The goal is that every item is on the goal side.
+- The objective is to minimize the number of time steps until completion.
 
 ### classic
 
-定形例は以下の通り。
-- 対象は農夫と狼と羊とキャベツ。
-- 初期ステップでは全員が出発側にいる。
-- 特定の2対象の組が発生している間は、農夫が同じ地点にいる必要がある。
-- ボートを単独で操れるのは農夫だけ。
+Canonical instance:
+
+- Items are farmer, wolf, goat, and cabbage.
+- At the initial step, everyone is on the start side.
+- While a forbidden pair shares a location, the farmer must be at that same location.
+- Only the farmer can operate the boat alone.
 
 ### dr_stone
 
-漫画による解釈は以下の通り。
-- ドクターストーン（南米編）のロープウェーによるアンデス山脈における移動を想定する。
-- 最初から到達側にいるメンバーがいる（コハク）。
-- 重量による積載上限もある。
-- 対象のうち、以下のようなメンバー集合が存在する。
-  - 疑いありメンバー（例: ヒョウガ・ゼノ）
-  - クラフトメンバー（例: センクウ・カセキ・クロム・ゼノ）
-  - バトルメンバー（例: ツカサ・コハク・タイジュ・ヒョウガ）
-- 各地点にいる疑いありメンバーに対して、同地点における疑いなしバトルメンバーが同数以上その場にいる必要がある。
-- 疑いありバトルメンバーが出発側・到達側にいる間は、同地点において、疑いなしバトルメンバーのなかで、疑いありバトルメンバーより多くが、その場にいる必要がある。
-- 最後（すべての対象が到達側にいる状態の1ステップ前）に移動するメンバーは、疑いなしクラフトメンバーから1人以上、疑いなしバトルメンバーから1人以上が必要である。
+Interpretation based on the manga:
 
-## ファイル
+- Models ropeway travel in the Andes from *Dr. Stone* (South America arc).
+- Some members start on the goal side (Kohaku).
+- There is also a weight-based load limit.
+- Member sets include:
+  - Suspicious members (e.g. Hyoga, Xeno)
+  - Craft members (e.g. Senku, Kaseki, Chrome, Xeno)
+  - Battle members (e.g. Tsukasa, Kohaku, Taiju, Hyoga)
+- At each location, the number of trusted battle members must be at least the number of suspicious members present.
+- While suspicious battle members are on the start or goal side, trusted battle members at that location must strictly outnumber them.
+- On the final move (the step just before everyone is on the goal side), the transit party needs at least one trusted craft member and at least one trusted battle member.
 
-| ファイル | 内容 |
-|----------|------|
-| [yaml_spec.md](yaml_spec.md) | 問題定義 YAML の書き方 |
-| [formulation/common.md](formulation/common.md) | IP 共通骨格（↔ `engine.py`） |
-| [formulation/classic.md](formulation/classic.md) | classic 追加定式化（↔ `constraints/classic.py`） |
-| [formulation/dr_stone.md](formulation/dr_stone.md) | dr_stone 追加定式化（↔ `constraints/dr_stone.py`） |
+## Files
+
+| File | Content |
+|------|---------|
+| [yaml_spec.md](yaml_spec.md) | How to write problem-definition YAML |
+| [formulation/common.md](formulation/common.md) | Shared IP skeleton (↔ `engine.py`) |
+| [formulation/classic.md](formulation/classic.md) | classic extras (↔ `constraints/classic.py`) |
+| [formulation/dr_stone.md](formulation/dr_stone.md) | dr_stone extras (↔ `constraints/dr_stone.py`) |

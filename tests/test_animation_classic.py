@@ -1,4 +1,4 @@
-"""classic 向けアニメーション統合テスト。"""
+"""Animation integration test for classic."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ CLASSIC_YAML = EXAMPLES_DIR / "classic.yaml"
 
 @unittest.skipUnless(HAS_ANIMATE, "animate extras not installed")
 class ClassicAnimationExportTest(unittest.TestCase):
-    """classic.yaml の mp4 書き出し統合テスト。"""
+    """mp4 export integration test for classic.yaml."""
 
     def test_classic_example_exports_mp4(self) -> None:
         spec = load_spec(CLASSIC_YAML)

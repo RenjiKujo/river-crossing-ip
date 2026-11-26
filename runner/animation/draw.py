@@ -1,4 +1,4 @@
-"""matplotlib によるフレーム描画。"""
+"""Frame drawing with matplotlib."""
 
 from __future__ import annotations
 
@@ -26,16 +26,16 @@ from river_crossing_ip.types import ClassicSpec, DrStoneSpec, PuzzleSpec
 if TYPE_CHECKING:
     from river_crossing_ip.solve.result import SolveResult
 
-# YouTube Shorts 縦型
+# YouTube Shorts vertical format
 CANVAS_WIDTH = 1080
 CANVAS_HEIGHT = 1920
 CANVAS_DPI = 100
 
-# レイアウト領域（y 座標、上から）
+# Layout regions (y coordinates, from the top)
 HEADER_BOTTOM = 170
 NEAR_BOTTOM = 760
 ROPEWAY_BOTTOM = 1160
-# FAR は 1160〜1920
+# FAR spans 1160 to 1920
 
 CARD_GAP = 12
 HIGHLIGHT_COLOR = "#FFF59D"
@@ -50,7 +50,7 @@ DEFAULT_EDGE_COLOR = "#424242"
 
 
 def create_canvas() -> tuple[Figure, Axes]:
-    """1080x1920 の描画キャンバスを作成する。"""
+    """Create a 1080x1920 drawing canvas."""
     fig_w = CANVAS_WIDTH / CANVAS_DPI
     fig_h = CANVAS_HEIGHT / CANVAS_DPI
     figure = plt.figure(figsize=(fig_w, fig_h), dpi=CANVAS_DPI)
@@ -63,7 +63,7 @@ def create_canvas() -> tuple[Figure, Axes]:
 
 
 def _grid_cols(count: int) -> int:
-    """人数に応じた列数を返す（少ないほどカードを大きくする）。"""
+    """Return the number of columns by item count (fewer items give larger cards)."""
     if count <= 2:
         return max(1, count)
     if count <= 6:
@@ -74,7 +74,7 @@ def _grid_cols(count: int) -> int:
 def _grid_metrics(
     count: int, area_top: float, area_bottom: float
 ) -> tuple[float, float, float, float, int]:
-    """エリア内グリッドのカード幅・高さ・原点・列数を返す。"""
+    """Return the card width, height, origin, and column count of the in-area grid."""
     area_height = area_bottom - area_top
     area_width = CANVAS_WIDTH - 40
     margin_x = 20.0
@@ -98,7 +98,7 @@ def _draw_badge(
     facecolor: str,
     text_color: str = "white",
 ) -> None:
-    """カード右上用バッジを描画する。"""
+    """Draw the badge for the top-right of a card."""
     badge = FancyBboxPatch(
         (x, y),
         width,
@@ -134,7 +134,7 @@ def _draw_card(
     weight_kg: int | None = None,
     weight_fontsize: float = 11.0,
 ) -> None:
-    """メンバーカード1枚を描画する。"""
+    """Draw a single member card."""
     facecolor = HIGHLIGHT_COLOR if highlighted else "white"
     if card_style == CardStyle.PILOT:
         edgecolor = PILOT_COLOR
@@ -158,7 +158,7 @@ def _draw_card(
         linewidth = 1.8
 
     if highlighted:
-        # 枠色は属性を残し、太さだけ強調する
+        # Keep the frame color (attribute) and emphasize only the thickness
         linewidth = max(linewidth, 3.5)
         if card_style == CardStyle.DEFAULT:
             edgecolor = HIGHLIGHT_EDGE_COLOR
@@ -271,7 +271,7 @@ def _draw_item_grid(
     spec: PuzzleSpec,
     moved_items: frozenset[str],
 ) -> None:
-    """エリア内にカードグリッドを描画する。"""
+    """Draw a card grid inside an area."""
     if not items:
         return
 
@@ -312,7 +312,7 @@ def _draw_item_grid(
 
 
 def _draw_section_label(axes: Axes, label: str, y: float) -> None:
-    """エリア見出しを描画する。"""
+    """Draw an area heading."""
     axes.text(
         CANVAS_WIDTH / 2,
         y,
@@ -332,7 +332,7 @@ def _draw_header(
     layout: StepLayout,
     max_load_kg: int | None,
 ) -> None:
-    """ヘッダー（Step / Phase / Load）を描画する。"""
+    """Draw the header (Step / Phase / Load)."""
     phase = phase_label(step, len(layout.transit_items))
     axes.text(
         40,
@@ -375,7 +375,7 @@ def _vehicle_label(
     is_empty: bool,
     has_motion: bool,
 ) -> str:
-    """中央帯の乗り物ラベルを組み立てる。"""
+    """Build the vehicle label for the center band."""
     if layout.load_kg is not None:
         return f"[{vehicle_name} {layout.load_kg} kg]"
     if is_empty and has_motion:
@@ -392,7 +392,7 @@ def _draw_vehicle_band(
     spec: PuzzleSpec,
     moved_items: frozenset[str],
 ) -> None:
-    """乗り物帯（BOAT / GONDOLA）を描画する。"""
+    """Draw the vehicle band (BOAT / GONDOLA)."""
     top = NEAR_BOTTOM + 10
     bottom = ROPEWAY_BOTTOM - 10
     band = FancyBboxPatch(
@@ -470,7 +470,7 @@ def draw_step_frame(
     result: SolveResult,
     spec: PuzzleSpec,
 ) -> None:
-    """1ステップ分のフレームを描画する（axes をクリアして再描画）。"""
+    """Draw the frame for one step (clear axes and redraw)."""
     axes.clear()
     axes.set_xlim(0, CANVAS_WIDTH)
     axes.set_ylim(CANVAS_HEIGHT, 0)
@@ -511,7 +511,7 @@ def draw_intro_frame(
     *,
     puzzle_type: str = "dr_stone",
 ) -> None:
-    """イントロフレームを描画する。"""
+    """Draw the intro frame."""
     axes.clear()
     axes.set_xlim(0, CANVAS_WIDTH)
     axes.set_ylim(CANVAS_HEIGHT, 0)

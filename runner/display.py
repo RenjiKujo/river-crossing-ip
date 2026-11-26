@@ -1,26 +1,26 @@
-"""求解結果の表示。"""
+"""Display of the solve result."""
 
 from __future__ import annotations
 
 from river_crossing_ip.solve.result import SolveResult
 
 LOCATION_LABELS = {
-    "start": "出発側",
-    "goal": "到達側",
-    "transit": "移動中",
+    "start": "Start side",
+    "goal": "Goal side",
+    "transit": "In transit",
 }
 
 
 def display_result(result: SolveResult) -> None:
-    """求解結果を標準出力に表示する。
+    """Print the solve result to standard output.
 
     Args:
-      result: 求解結果。
+      result: Solve result.
     """
     print(f"status: {result.status}")
 
     if result.status != "optimal":
-        print("求解に失敗しました。")
+        print("Solve failed.")
         return
 
     print(f"objective: {result.objective_value}")
@@ -36,12 +36,12 @@ def display_result(result: SolveResult) -> None:
         transit_items = _items_at(positions, "transit")
 
         print(f"\nstep {time_step}")
-        print(f"  出発側: {', '.join(start_items) if start_items else '-'}")
+        print(f"  Start side: {', '.join(start_items) if start_items else '-'}")
         if transit_items:
-            print(f"  移動中: {', '.join(transit_items)}")
-        print(f"  到達側: {', '.join(goal_items) if goal_items else '-'}")
+            print(f"  In transit: {', '.join(transit_items)}")
+        print(f"  Goal side: {', '.join(goal_items) if goal_items else '-'}")
 
 
 def _items_at(positions: dict[str, str], location: str) -> list[str]:
-    """指定位置にいる対象名の一覧を返す。"""
+    """Return the names of items at the given position."""
     return sorted(item for item, place in positions.items() if place == location)
